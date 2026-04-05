@@ -17,9 +17,9 @@ const HEADERS = {
 };
 
 const TIERS = {
-  free:       { dailyLimit: 1,  hourlyLimit: 1,  burstLimit: 3  },
-  registered: { dailyLimit: 3,  hourlyLimit: 2,  burstLimit: 5  },
-  premium:    { dailyLimit: 30, hourlyLimit: 10, burstLimit: 15 },
+  free:       { dailyLimit: 100,  hourlyLimit: 20,  burstLimit: 30  },
+  registered: { dailyLimit: 100,  hourlyLimit: 20,  burstLimit: 30  },
+  premium:    { dailyLimit: 300, hourlyLimit: 30, burstLimit: 50 },
 };
 
 // In-memory store (si azzera ogni cold start Netlify, ~15 min inattività)
@@ -149,10 +149,10 @@ exports.handler = async (event) => {
 function tierLimitMessage(tier, limit, resetIn) {
   const hours = Math.ceil(resetIn / 3600);
   if (tier === "free") {
-    return `Hai usato la tua ricerca gratuita di oggi. Registrati gratis per 3 ricerche/giorno, o passa a Premium per 30/giorno.`;
+    return `Hai usato le tue ricerche gratuite di oggi. Registrati gratis per passsare a 10 ricerche/giorno gratuite, o passa a Premium per 30.`;
   }
   if (tier === "registered") {
-    return `Hai usato le tue 3 ricerche di oggi. Passa a Premium (€5/anno) per 30 ricerche/giorno.`;
+    return `Hai usato le tue 10 ricerche di oggi. Passa a Premium (€5/anno) per 30 ricerche/giorno.`;
   }
   return `Limite giornaliero raggiunto. Riprova tra ${hours} ore.`;
 }
