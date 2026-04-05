@@ -1,0 +1,8 @@
+{
+  "name": "topaia-functions",
+  "version": "1.0.0",
+  "dependencies": {
+    "@netlify/functions": "^2.0.0",
+    "@netlify/blobs": "^8.0.0"
+  }
+}

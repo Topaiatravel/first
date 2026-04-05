@@ -1,0 +1,54 @@
+# netlify.toml — topaia.travel
+# Deploy da GitHub, nessun build step (frontend è HTML puro)
+
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# ── API routes ────────────────────────────────────────────────
+[[redirects]]
+  from = "/api/search"
+  to = "/.netlify/functions/search"
+  status = 200
+
+[[redirects]]
+  from = "/api/ryanair"
+  to = "/.netlify/functions/ryanair"
+  status = 200
+
+[[redirects]]
+  from = "/api/wizzair"
+  to = "/.netlify/functions/wizzair"
+  status = 200
+
+[[redirects]]
+  from = "/api/aviasales"
+  to = "/.netlify/functions/aviasales"
+  status = 200
+
+[[redirects]]
+  from = "/api/hotels"
+  to = "/.netlify/functions/hotels"
+  status = 200
+
+[[redirects]]
+  from = "/api/rate-check"
+  to = "/.netlify/functions/rate-check"
+  status = 200
+
+[[redirects]]
+  from = "/api/deals"
+  to = "/.netlify/functions/deals"
+  status = 200
+
+# Fallback SPA: tutte le route non trovate → index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
