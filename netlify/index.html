@@ -1869,7 +1869,7 @@ const TIER_COLORS = {
 
     for (const mode of modes) {
       step++;
-      onProgress({t.btnSearching}, step, totalSteps);
+      onProgress("Ricerca in corso...", step, totalSteps);
 
       if (mode === "any") {
         // ── Modalità prezzo: usa Ryanair cheapestPerDay (0 call SerpApi) ──
