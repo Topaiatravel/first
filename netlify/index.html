@@ -1,0 +1,3612 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>topaia.travel — Voli economici</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f5f5f0; font-family: 'Inter', sans-serif; color: #1a1a1a; }
+    select { appearance: none; -webkit-appearance: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes slideUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+  const { useState, useEffect, useMemo, useCallback } = React;
+
+// ── NATIONALITY GROUPS ────────────────────────────────────────
+const NATIONALITY_GROUPS = {
+  EU: {
+    label: "Unione Europea",
+    countries: [
+      "AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU",
+      "IE","IT","LV","LT","LU","MT","NL","PL","PT","RO","SK","SI","ES","SE"
+    ],
+    schengen: true,
+    passportPower: "high"
+  },
+  EEA_EXTRA: {
+    label: "SEE/EFTA",
+    countries: ["IS","LI","NO","CH"],
+    schengen: true,
+    passportPower: "high"
+  },
+  CIS: {
+    label: "CSI (ex-URSS)",
+    countries: ["AM","AZ","BY","KZ","KG","MD","RU","TJ","UZ"],
+    passportPower: "low"
+  },
+  ANGLOSPHERE: {
+    label: "Anglosphere",
+    countries: ["US","GB","CA","AU","NZ"],
+    passportPower: "high"
+  },
+  ASIA_HIGH: {
+    label: "Asia (passaporto forte)",
+    countries: ["JP","KR","SG","BN","MY","TH"],
+    passportPower: "high"
+  },
+  ASIA_MID: {
+    label: "Asia (passaporto medio)",
+    countries: ["IN","CN","PH","ID","VN","PK","BD","LK","NP","MM"],
+    passportPower: "low"
+  },
+  MIDDLE_EAST: {
+    label: "Medio Oriente",
+    countries: ["AE","QA","SA","KW","BH","OM","IL","TR","GE"],
+    passportPower: "medium"
+  },
+  LATIN_AMERICA: {
+    label: "America Latina",
+    countries: ["BR","MX","AR","CL","CO","PE","EC","UY","PY","PA","CR"],
+    passportPower: "medium"
+  },
+  AFRICA: {
+    label: "Africa",
+    countries: ["ZA","NG","KE","GH","EG","MA","TN","ET","TZ","SN"],
+    passportPower: "low"
+  },
+  OTHER_EUROPE: {
+    label: "Europa (extra-UE)",
+    countries: ["UA","GE","RS","ME","MK","AL","BA","XK","MC","AD","SM","VA"],
+    passportPower: "medium"
+  }
+};
+
+con
+
+// ── COUNTRY NAMES ─────────────────────────────────────────────
+const COUNTRY_NAMES = {
+  AF:"Afghanistan",AL:"Albania",DZ:"Algeria",AD:"Andorra",AO:"Angola",AR:"Argentina",
+  AM:"Armenia",AU:"Australia",AT:"Austria",AZ:"Azerbaijan",BH:"Bahrain",BD:"Bangladesh",
+  BY:"Bielorussia",BE:"Belgio",BA:"Bosnia-Erzegovina",BR:"Brasile",BN:"Brunei",BG:"Bulgaria",
+  KH:"Cambogia",CA:"Canada",CL:"Cile",CN:"Cina",CO:"Colombia",CR:"Costa Rica",HR:"Croazia",
+  CY:"Cipro",CZ:"Cechia",DK:"Danimarca",EC:"Ecuador",EG:"Egitto",SV:"El Salvador",
+  EE:"Estonia",ET:"Etiopia",FI:"Finlandia",FR:"Francia",GE:"Georgia",DE:"Germania",
+  GH:"Ghana",GR:"Grecia",GT:"Guatemala",HN:"Honduras",HK:"Hong Kong",HU:"Ungheria",
+  IS:"Islanda",IN:"India",ID:"Indonesia",IR:"Iran",IQ:"Iraq",IE:"Irlanda",IL:"Israele",
+  IT:"Italia",JP:"Giappone",JO:"Giordania",KZ:"Kazakhstan",KE:"Kenya",XK:"Kosovo",
+  KW:"Kuwait",KG:"Kirghizistan",LA:"Laos",LV:"Lettonia",LB:"Libano",LI:"Liechtenstein",
+  LT:"Lituania",LU:"Lussemburgo",MY:"Malesia",MT:"Malta",MX:"Messico",MD:"Moldavia",
+  MC:"Monaco",MN:"Mongolia",ME:"Montenegro",MA:"Marocco",MM:"Myanmar",NP:"Nepal",
+  NL:"Paesi Bassi",NZ:"Nuova Zelanda",NI:"Nicaragua",NG:"Nigeria",MK:"Macedonia del Nord",
+  NO:"Norvegia",OM:"Oman",PK:"Pakistan",PA:"Panama",PY:"Paraguay",PE:"Perù",PH:"Filippine",
+  PL:"Polonia",PT:"Portogallo",QA:"Qatar",RO:"Romania",RU:"Russia",SA:"Arabia Saudita",
+  SN:"Senegal",RS:"Serbia",SG:"Singapore",SK:"Slovacchia",SI:"Slovenia",ZA:"Sudafrica",
+  KR:"Corea del Sud",ES:"Spagna",LK:"Sri Lanka",SE:"Svezia",CH:"Svizzera",TW:"Taiwan",
+  TJ:"Tagikistan",TZ:"Tanzania",TH:"Thailandia",TN:"Tunisia",TR:"Turchia",TM:"Turkmenistan",
+  UA:"Ucraina",AE:"Emirati Arabi",GB:"Regno Unito",US:"Stati Uniti",UY:"Uruguay",
+  UZ:"Uzbekistan",VN:"Vietnam",SM:"San Marino",VA:"Vaticano"
+};
+
+// 
+
+// ── TRANSIT VISA-FREE POLICIES ────────────────────────────────
+const TRANSIT_POLICIES = [
+  {
+    id: "sgp-vftf-cis",
+    country: "Singapore",
+    countryCode: "SG",
+    city: "Singapore (Changi)",
+    airportIata: ["SIN"],
+    policyName: "Visa-Free Transit Facility (VFTF)",
+    maxHours: 96,
+    eligibleNationalities: ["AM","AZ","BY","KZ","KG","MD","RU","TJ","UZ","GE","TM","UA"],
+    conditions: [
+      "In transito da/verso un paese terzo",
+      "Biglietto aereo di proseguimento entro 96 ore",
+      "Ingresso con qualsiasi mezzo, uscita solo via aerea",
+      "Passaporto valido almeno 6 mesi dalla partenza"
+    ],
+    additionalRequirements: null,
+    documentType: "transit_facility",
+    costEur: 0,
+    applicationMethod: "Al punto di ingresso (Changi Airport), nessuna domanda preventiva",
+    importantNotes: "Decisione finale dell'ICA al punto di ingresso. Nessuna estensione possibile. Armenia è eleggibile come paese CIS.",
+    source: "https://www.ica.gov.sg/enter-transit-depart/entering-singapore/visa-free-transit-facility",
+    lastVerified: "2026-03-20",
+    active: true,
+    familyFriendly: true,
+    topaiaTip: "Perfetto per famiglie con passaporti CIS che transitano verso Australia/NZ/Asia. Combinabile con stopover Singapore Airlines."
+  },
+  {
+    id: "sgp-vftf-india",
+    country: "Singapore",
+    countryCode: "SG",
+    city: "Singapore (Changi)",
+    airportIata: ["SIN"],
+    policyName: "VFTF per cittadini indiani",
+    maxHours: 96,
+    eligibleNationalities: ["IN"],
+    conditions: [
+      "In transito da/verso un paese terzo via aerea",
+      "Biglietto aereo di proseguimento entro 96 ore",
+      "Uscita solo via aerea o marittima"
+    ],
+    additionalRequirements: "Visto valido (almeno 1 mese) di: USA, UK, Canada, Australia, Germania, Giappone, Nuova Zelanda o Svizzera",
+    documentType: "transit_facility_conditional",
+    costEur: 0,
+    applicationMethod: "Al punto di ingresso, presentando visto del paese terzo",
+    importantNotes: "Utilizzabile una sola volta per itinerario (andata O ritorno, non entrambi). SJV utilizzabili al ritorno.",
+    source: "https://www.ica.gov.sg/enter-transit-depart/entering-singapore/visa-free-transit-facility",
+    lastVerified: "2026-03-20",
+    active: true,
+    familyFriendly: true,
+    topaiaTip: "Ideale per indiani con visto USA/UK. Stopover gratuito a Singapore!"
+  },
+  {
+    id: "sgp-vftf-china",
+    country: "Singapore",
+    countryCode: "SG",
+    city: "Singapore (Changi)",
+    airportIata: ["SIN"],
+    policyName: "VFTF per cittadini PRC (selezionati)",
+    maxHours: 96,
+    eligibleNationalities: ["CN"],
+    conditions: [
+      "Solo titolari di PRC Travel Document, HK SAR DOI, Macau SAR Travel Permit",
+      "Non valido per passaporto ordinario PRC (che ha separato accordo visa-free)"
+    ],
+    additionalRequirements: "Visto valido di: USA, UK, Canada, Australia, Germania, Giappone, Nuova Zelanda o Svizzera",
+    documentType: "transit_facility_conditional",
+    costEur: 0,
+    applicationMethod: "Al punto di ingresso",
+    importantNotes: "I cittadini PRC con passaporto ordinario hanno accordo bilaterale visa-free separato con Singapore.",
+    source: "https://www.ica.gov.sg/enter-transit-depart/entering-singapore/visa-free-transit-facility",
+    lastVerified: "2026-03-20",
+    active: true,
+    familyFriendly: true,
+    topaiaTip: "Per cinesi con documenti speciali. I passaporti PRC ordinari hanno già visa-free 30gg."
+  },
+  {
+    id: "chn-240h",
+    country: "Cina",
+    countryCode: "CN",
+    city: "65 porti in 24 province (Beijing, Shanghai, Guangzhou, Chengdu, ecc.)",
+    airportIata: ["PEK","PKX","PVG","SHA","CAN","CTU","TFU","SZX","HGH","WUH","CKG","XIY","KMG","NKG","TAO","DLC","SHE","HRB","CSX","CGO","XMN","FOC","NNG","KWE","HAK","SYX","TSN"],
+    policyName: "240-Hour Transit Without Visa (TWOV)",
+    maxHours: 240,
+    eligibleNationalities: [
+      "AT","BE","CZ","DK","EE","FI","FR","DE","GR","HU","IS","IT","LV","LT","LU",
+      "MT","NL","PL","PT","SK","SI","ES","SE","CH","MC","RU","GB","IE","CY","BG",
+      "RO","UA","RS","HR","BA","ME","MK","AL","BY","NO",
+      "US","CA","BR","MX","AR","CL",
+      "AU","NZ",
+      "JP","KR","SG","BN","AE","QA","ID"
+    ],
+    conditions: [
+      "In transito verso un paese TERZO (diverso dal paese di partenza)",
+      "Biglietto di proseguimento confermato entro 240 ore",
+      "Passaporto valido almeno 3 mesi dall'arrivo",
+      "Ingresso/uscita da porti designati (65 totali)",
+      "Hong Kong, Macau e Taiwan contano come 'territori separati' per la regola del paese terzo"
+    ],
+    additionalRequirements: null,
+    documentType: "transit_without_visa",
+    costEur: 0,
+    applicationMethod: "All'ufficio ispezione di frontiera al porto di ingresso",
+    importantNotes: "NON eleggibile: India, Pakistan, Bangladesh, Filippine, Malaysia (che hanno altro accordo). Il periodo di 240h parte alle 00:00 del giorno DOPO l'arrivo. Non valido in: Mongolia Interna, Jilin, Tibet, Gansu, Qinghai, Ningxia, Xinjiang.",
+    source: "https://www.chinatravel.com/guide/visa/240-hour-visa-free-in-china",
+    lastVerified: "2026-03-15",
+    active: true,
+    familyFriendly: true,
+    topaiaTip: "10 giorni in Cina gratis! Ideale combinato con Air China (hotel gratis) per stopover + transito. Attenzione alla regola del 'paese terzo'."
+  },
+  {
+    id: "chn-24h",
+    country: "Cina",
+    countryCode: "CN",
+    city: "Quasi tutti gli aeroporti internazionali",
+    airportIata: ["PEK","PKX","PVG","SHA","CAN","CTU","SZX","HGH","WUH","CKG","XIY"],
+    policyName: "24-Hour Transit Without Visa",
+    maxHours: 24,
+    eligibleNationalities: "MOST",
+    conditions: [
+      "In transito verso un paese terzo",
+      "Biglietto confermato entro 24 ore",
+      "Arrivo via aerea, treno o nave"
+    ],
+    additionalRequirements: null,
+    documentType: "transit_without_visa",
+    costEur: 0,
+    applicationMethod: "Automatico alla frontiera",
+    importantNotes: "Disponibile per quasi tutte le nazionalità, con eccezioni limitate. Più restrittivo del 240h ma molto più inclusivo.",
+    source: "https://www.travelchinaguide.com/embassy/visa/free-transit-24hour.htm",
+    lastVerified: "2026-03-15",
+    active: true,
+    familyFriendly: true,
+    topaiaTip: "Alternativa veloce per nazionalità non eleggibili ai 240h. 24 ore bastano per vedere il centro di Beijing o Shanghai."
+  },
+  {
+    id: "kor-transit",
+    country: "Corea del Sud",
+    countryCode: "KR",
+    city: "Seoul Incheon",
+    airportIata: ["ICN"],
+    policyName: "Transit Tourism Program + K-ETA Exemption",
+    maxHours: 72,
+    eligibleNationalities: "MOST_VISA_EXEMPT",
+    conditions: [
+      "In transito con volo di proseguimento da Incheon",
+      "K-ETA esenzione estesa fino a dic 2026 per 67 nazionalità",
+      "Tour gratuiti dall'aeroporto per transiti 4-24 ore"
+    ],
+    additionalRequirements: null,
+    documentType: "transit_tourism",
+    costEur: 0,
+    applicationMethod: "Automatico per nazionalità eleggibili",
+    importantNotes: "Per tour gratuiti: transiti 4-24h, registrazione al banco Transit Tour in aeroporto.",
+    source: "https://www.immigration.go.kr",
+    lastVerified: "2026-02-20",
+    active: true,
+    familyFriendly: true,
+    topaiaTip: "Tour gratuiti di Seoul combinabili con K-Stopover Korean Air. Esenzione K-ETA fino a fine 2026."
+  },
+  {
+    id: "uae-transit",
+    country: "Emirati Arabi Uniti",
+    countryCode: "AE",
+    city: "Dubai / Abu Dhabi",
+    airportIata: ["DXB","AUH","SHJ"],
+    policyName: "Transit Visa / Visa-Free Entry",
+    maxHours: 2160,
+    eligibleNationalities: "BROAD",
+    conditions: [
+      "Molte nazionalità hanno visa-free 30-90 giorni",
+      "Per nazionalità che necessitano visto: transit visa 48-96h disponibile"
+    ],
+    additionalRequirements: "Varia per nazionalità. Armeni: visto necessario (eVisa disponibile).",
+    documentType: "visa_free_or_transit",
+    costEur: 0,
+    applicationMethod: "Automatico per nazionalità eleggibili, eVisa per altre",
+    importantNotes: "Emirates offre Dubai Connect (hotel gratis) per layover lunghi. Combinabile con stopover Etihad.",
+    source: "https://u.ae/en/information-and-services/visa-and-emirates-id/do-you-need-an-entry-permit-or-a-visa-to-enter-the-uae",
+    lastVerified: "2026-03-10",
+    active: true,
+    familyFriendly: true,
+    topaiaTip: "Hub ideale per famiglie. Combinare con stopover Etihad (2 notti gratis) o Emirates Dubai Connect."
+  },
+  {
+    id: "tur-transit",
+    country: "Turchia",
+    countryCode: "TR",
+    city: "Istanbul",
+    airportIata: ["IST","SAW"],
+    policyName: "Transit Area (Airside) + eVisa",
+    maxHours: 24,
+    eligibleNationalities: "MOST",
+    conditions: [
+      "Transito airside senza visto per la maggior parte delle nazionalità",
+      "Per uscire dall'aeroporto: eVisa o visa-free per molte nazionalità",
+      "EU, USA, UK, ecc.: visa-free o eVisa semplice"
+    ],
+    additionalRequirements: "Armeni: eVisa disponibile online (~$50). Transito airside gratuito.",
+    documentType: "airside_transit",
+    costEur: 0,
+    applicationMethod: "Automatico per airside. eVisa.gov.tr per uscire",
+    importantNotes: "TourIstanbul offre tour gratuiti per layover 6+ ore (senza necessità di visto per tour organizzati dall'aeroporto).",
+    source: "https://www.mfa.gov.tr/visa-information-for-foreigners.en.mfa",
+    lastVerified: "2026-03-01",
+    active: true,
+    familyFriendly: true,
+    topaiaTip: "Turkish Airlines offre hotel gratis per stopover + tour gratuiti anche senza visto (partono dall'aeroporto)."
+  },
+  {
+    id: "jpn-transit",
+    country: "Giappone",
+    countryCode: "JP",
+    city: "Tokyo / Osaka",
+    airportIata: ["NRT","HND","KIX","ITM"],
+    policyName: "Shore Pass / Transit Visa Exemption",
+    maxHours: 72,
+    eligibleNationalities: "VISA_EXEMPT",
+    conditions: [
+      "68 nazionalità visa-free (inclusi tutti EU)",
+      "Shore Pass per nazionalità con visto: permette uscita temporanea dall'aeroporto",
+      "Biglietto di proseguimento necessario"
+    ],
+    additionalRequirements: "Armeni: visto necessario. Shore Pass possibile ma non garantito.",
+    documentType: "visa_exempt_or_shore_pass",
+    costEur: 0,
+    applicationMethod: "Automatico per visa-exempt. Shore Pass: richiesta all'immigrazione",
+    importantNotes: "JAL offre connessioni domestiche gratuite verso 30+ città. Shore Pass a discrezione dell'ufficiale.",
+    source: "https://www.mofa.go.jp/j_info/visit/visa/short/novisa.html",
+    lastVerified: "2026-02-15",
+    active: true,
+    familyFriendly: false,
+    topaiaTip: "Per EU: nessun problema, visa-free fino a 90gg. Per CIS: verificare Shore Pass, non garantito."
+  },
+  {
+    id: "qat-transit",
+    country: "Qatar",
+    countryCode: "QA",
+    city: "Doha",
+    airportIata: ["DOH"],
+    policyName: "Visa Waiver / Transit Visa Free",
+    maxHours: 2160,
+    eligibleNationalities: "BROAD",
+    conditions: [
+      "80+ nazionalità visa-free fino a 30 giorni",
+      "Molte altre nazionalità: visa on arrival gratuito",
+      "Transit visa gratuito via Discover Qatar per stopover"
+    ],
+    additionalRequirements: "Armeni: verificare status. Possibile visa on arrival.",
+    documentType: "visa_free_or_voa",
+    costEur: 0,
+    applicationMethod: "Automatico per la maggior parte delle nazionalità",
+    importantNotes: "Discover Qatar offre hotel da $14/notte per stopover. Visto transito gratuito incluso con prenotazione stopover.",
+    source: "https://www.qatarairways.com/en/offers/qatar-stopover.html",
+    lastVerified: "2026-03-10",
+    active: true,
+    familyFriendly: true,
+    topaiaTip: "Qatar Airways Discover Qatar include visto transito gratis + hotel $14/notte. Eccellente per famiglie."
+  },
+  {
+    id: "hkg-transit",
+    country: "Hong Kong",
+    countryCode: "HK",
+    city: "Hong Kong",
+    airportIata: ["HKG"],
+    policyName: "Pre-arrival Registration / Visa-Free",
+    maxHours: 2160,
+    eligibleNationalities: "VERY_BROAD",
+    conditions: [
+      "170+ nazionalità visa-free 7-180 giorni",
+      "Alcune nazionalità: Pre-arrival Registration for Indian nationals",
+      "Armeni: visa-free 14 giorni"
+    ],
+    additionalRequirements: null,
+    documentType: "visa_free",
+    costEur: 0,
+    applicationMethod: "Automatico all'arrivo",
+    importantNotes: "Hong Kong è separata dalla Cina per fini immigratori. Cataly Pacific offre stopover gratuito 7gg.",
+    source: "https://www.immd.gov.hk/eng/services/visas/visit-transit/visit-visa-entry-permit.html",
+    lastVerified: "2026-03-01",
+    active: true,
+    familyFriendly: true,
+    topaiaTip: "Armeni visa-free 14gg! Ottimo per combinare con Cathay Pacific stopover e poi TWOV 240h in Cina."
+  },
+  {
+    id: "mys-transit",
+    country: "Malesia",
+    countryCode: "MY",
+    city: "Kuala Lumpur",
+    airportIata: ["KUL","SZB"],
+    policyName: "Transit Without Visa / Visa-Free",
+    maxHours: 2160,
+    eligibleNationalities: "BROAD",
+    conditions: [
+      "Molte nazionalità visa-free 30-90 giorni",
+      "Transit 120h senza visto per alcuni",
+      "Armeni: visa-free 30 giorni con eNTRI"
+    ],
+    additionalRequirements: "eNTRI (Electronic Travel Registration & Information) per alcune nazionalità",
+    documentType: "visa_free_or_entri",
+    costEur: 0,
+    applicationMethod: "Automatico o eNTRI online",
+    importantNotes: "Hub AirAsia. Kuala Lumpur economicissima per stopover.",
+    source: "https://www.imi.gov.my",
+    lastVerified: "2026-02-15",
+    active: true,
+    familyFriendly: true,
+    topaiaTip: "KL è uno degli hub più economici dell'Asia. Perfetto per budget travelers."
+  },
+  {
+    id: "gbr-transit",
+    country: "Regno Unito",
+    countryCode: "GB",
+    city: "Londra",
+    airportIata: ["LHR","LGW","STN","LTN","MAN","BHX","EDI"],
+    policyName: "Transit Without Visa (Landside/Airside)",
+    maxHours: 48,
+    eligibleNationalities: "CONDITIONAL",
+    conditions: [
+      "Airside transit: senza visto per molte nazionalità",
+      "Landside transit (uscire dall'aeroporto): necessario DATV o esenzione",
+      "Esenzione DATV con visto valido USA/Canada/Australia/NZ + arrivo su volo idoneo"
+    ],
+    additionalRequirements: "Armeni: DATV necessario per transito landside. Airside: verificare. UK ETA necessario dal feb 2026.",
+    documentType: "transit_visa_conditional",
+    costEur: 0,
+    applicationMethod: "UK ETA online (£16) per nazionalità eleggibili",
+    importantNotes: "Dal 25 febbraio 2026 UK ETA obbligatorio per transito senza visto per 84 nazionalità.",
+    source: "https://www.gov.uk/check-uk-visa/y/transit",
+    lastVerified: "2026-03-15",
+    active: true,
+    familyFriendly: false,
+    topaiaTip: "Complesso per non-EU. Verificare sempre il DATV requirement prima di prenotare."
+  },
+  {
+    id: "pan-transit",
+    country: "Panama",
+    countryCode: "PA",
+    city: "Panama City",
+    airportIata: ["PTY"],
+    policyName: "Authorized Visa / Transit Facilitation",
+    maxHours: 168,
+    eligibleNationalities: "CONDITIONAL",
+    conditions: [
+      "Molte nazionalità visa-free 30-180 giorni",
+      "Con visto USA/Schengen valido: ingresso facilitato per molte nazionalità"
+    ],
+    additionalRequirements: "Verificare per nazionalità specifica",
+    documentType: "visa_free_conditional",
+    costEur: 0,
+    applicationMethod: "Automatico per nazionalità eleggibili",
+    importantNotes: "Copa Airlines offre stopover gratuito 7gg. Hub per Centro/Sud America.",
+    source: "https://www.migracion.gob.pa",
+    lastVerified: "2026-02-01",
+    active: true,
+    familyFriendly: true,
+    topaiaTip: "Con Copa Airlines: stopover gratis + visa-free per molti. Gateway ideale per le Americhe."
+  }
+];
+
+// 
+
+// ── VISA-FREE LOGIC ───────────────────────────────────────────
+function isNationalityEligible(policy, nationalityCode) {
+  if (Array.isArray(policy.eligibleNationalities)) {
+    return policy.eligibleNationalities.includes(nationalityCode);
+  }
+  // For "MOST", "BROAD", "VERY_BROAD" etc, we check by exclusion
+  const group = Object.values(NATIONALITY_GROUPS).find(g => g.countries.includes(nationalityCode));
+  if (!group) return false;
+  
+  if (policy.eligibleNationalities === "MOST" || policy.eligibleNationalities === "VERY_BROAD" || policy.eligibleNationalities === "BROAD") {
+    return true; // Most nationalities eligible, show with caveats
+  }
+  if (policy.eligibleNationalities === "MOST_VISA_EXEMPT") {
+    return group.passportPower === "high" || group.passportPower === "medium";
+  }
+  if (policy.eligibleNationalities === "VISA_EXEMPT") {
+    return group.passportPower === "high";
+  }
+  if (policy.eligibleNationalities === "CONDITIONAL") {
+    return true; // Show with conditions
+  }
+  return false;
+}
+
+function findTransitOptions(nationalityCode, connectionAirport = null) {
+  return TRANSIT_POLICIES
+    .filter(p => p.active)
+    .filter(p => isNationalityEligible(p, nationalityCode))
+    .filter(p => !connectionAirport || p.airportIata.includes(connectionAirport))
+    .map(p => ({
+      ...p,
+      certainty: Array.isArray(p.eligibleNationalities) && p.eligibleNationalities.includes(nationalityCode)
+        ? "confirmed" : "likely",
+      nationalityNote: getSpecificNote(p, nationalityCode)
+    }))
+    .sort((a, b) => {
+      if (a.certainty === "confirmed" && b.certainty !== "confirmed") return -1;
+      if (b.certainty === "confirmed" && a.certainty !== "confirmed") return 1;
+      return b.maxHours - a.maxHours;
+    });
+}
+
+function getSpecificNote(policy, natCode) {
+  if (natCode === "AM") {
+    const notes = {
+      "sgp-vftf-cis": "✅ Armenia è inclusa come paese CIS. Eleggibile per VFTF 96h.",
+      "chn-240h": "✅ Armenia non è nella lista dei 55 paesi per il 240h TWOV.",
+      "chn-24h": "⚠️ Verificare eleggibilità specifica. 24h TWOV generalmente disponibile.",
+      "tur-transit": "⚠️ eVisa necessario per uscire dall'aeroporto. Transito airside OK.",
+      "hkg-transit": "✅ Armeni visa-free per 14 giorni a Hong Kong.",
+      "uae-transit": "⚠️ Armeni: eVisa necessario per UAE.",
+      "qat-transit": "⚠️ Verificare status visa on arrival per armeni.",
+    };
+    return notes[policy.id] || null;
+  }
+  return null;
+}
+
+function findFamilyTransitOptions(nationalities, connectionAirport = null) {
+  if (nationalities.length === 0) return [];
+  
+  const optionsByNat = nationalities.map(nat => ({
+    nationality: nat,
+    options: findTransitOptions(nat, connectionAirport)
+  }));
+  
+  // Find intersection - policies that work for ALL family members
+  const allPolicyIds = optionsByNat[0].options.map(o => o.id);
+  const commonIds = allPolicyIds.filter(id =>
+    optionsByNat.every(natOpts => natOpts.options.some(o => o.id === id))
+  );
+  
+  return {
+    commonOptions: commonIds.map(id => {
+      const base = optionsByNat[0].options.find(o => o.id === id);
+      const perNat = optionsByNat.map(no => ({
+        nationality: no.nationality,
+        detail: no.options.find(o => o.id === id)
+      }));
+      return { ...base, perNationality: perNat };
+    }),
+    perNationality: optionsByNat
+  };
+}
+
+// ── UI COMPONENTS ───────────────────────────────────────────
+
+const CERTAINTY_STYLES = {
+  confirmed: { bg: "#052e16", border: "#22c55e", text: "#4ade80", label: "CONFERMATO" },
+  likely: { bg: "#1e1b4b", border: "#818cf8", text: "#a5b4fc", label: "PROBABILE" }
+};
+
+
+
+// ── STOPOVER PROGRAMS ─────────────────────────────────────────
+const STOPOVER_PROGRAMS = [
+  // ─── TIER 1: FREE HOTEL INCLUDED ───
+  {
+    id: "etihad-auh",
+    airline: "Etihad Airways",
+    iata: "EY",
+    alliance: "None (30+ bilateral)",
+    hub: "Abu Dhabi",
+    hubIata: "AUH",
+    country: "UAE",
+    tier: 1,
+    tierLabel: "Hotel Gratuito",
+    maxNights: 2,
+    maxHours: 4320, // up to 6 months
+    minLayoverHours: 24,
+    hotelIncluded: true,
+    hotelDetails: "Fino a 2 notti gratuite in hotel 3-4 stelle (Dusit Thani, Grand Hyatt, Shangri-La). Sconti su hotel 4-5 stelle premium.",
+    additionalPerks: ["Check-in/out 24/7", "Sconti tour e attività", "Fino a 40% off hotel premium"],
+    eligibility: "Biglietto A/R con connessione AUH prenotato via Etihad",
+    cabinRestrictions: null,
+    bookingMethod: "Portale Abu Dhabi Stopover dopo prenotazione volo",
+    bookingUrl: "https://www.etihad.com/en/fly-etihad/stopover",
+    advanceBookingDays: 0,
+    estimatedValueEur: { economy: 180, business: 300 },
+    seasonality: null,
+    visaInfo: "Visto UAE gratuito per molte nazionalità",
+    lastVerified: "2026-03-15",
+    active: true,
+    notes: "Uno dei programmi più generosi. Voucher hotel da presentare al check-in."
+  },
+  {
+    id: "turkish-ist",
+    airline: "Turkish Airlines",
+    iata: "TK",
+    alliance: "Star Alliance",
+    hub: "Istanbul",
+    hubIata: "IST",
+    country: "Turchia",
+    tier: 1,
+    tierLabel: "Hotel Gratuito",
+    maxNights: 3,
+    maxHours: 168, // 7 days
+    minLayoverHours: 20, // economy, 7h business
+    hotelIncluded: true,
+    hotelDetails: "Economy: 1 notte hotel 4 stelle. Business: fino a 2-3 notti hotel 4-5 stelle.",
+    additionalPerks: ["TourIstanbul: tour gratuiti città per layover 6+ ore", "Guida + trasporto inclusi nel tour"],
+    eligibility: "Stopover deve essere la connessione più breve disponibile. Minimo 20h economy, 7h business.",
+    cabinRestrictions: "Economy: 1 notte | Business: 2-3 notti",
+    bookingMethod: "Email all'ufficio stopover del proprio paese dopo prenotazione",
+    bookingUrl: "https://www.turkishairlines.com/en-int/flights/stopover/",
+    advanceBookingDays: 3,
+    estimatedValueEur: { economy: 120, business: 350 },
+    seasonality: null,
+    visaInfo: "eVisa o visto all'arrivo per molte nazionalità",
+    lastVerified: "2026-02-20",
+    active: true,
+    notes: "Tra i più generosi al mondo. Verificare sempre che sia la connessione più breve."
+  },
+  {
+    id: "emirates-dxb",
+    airline: "Emirates",
+    iata: "EK",
+    alliance: "None",
+    hub: "Dubai",
+    hubIata: "DXB",
+    country: "UAE",
+    tier: 1,
+    tierLabel: "Hotel Gratuito",
+    maxNights: 1,
+    maxHours: 26,
+    minLayoverHours: 8, // 6 for business/first
+    hotelIncluded: true,
+    hotelDetails: "Dubai Connect: hotel gratuito (Copthorne, Le Méridien, JW Marriott Marquis), pasti e trasferimenti inclusi.",
+    additionalPerks: ["Pasti inclusi", "Trasferimenti aeroporto-hotel", "Visto UAE gratuito"],
+    eligibility: "Deve essere la connessione più breve disponibile. Economy/Premium: 8-26h, Business/First: 6-26h.",
+    cabinRestrictions: "Economy: min 8h | Business/First: min 6h",
+    bookingMethod: "Manage Booking > Dubai Stopover, almeno 24h prima",
+    bookingUrl: "https://www.emirates.com/english/before-you-fly/dubai-connect/",
+    advanceBookingDays: 1,
+    estimatedValueEur: { economy: 150, business: 200 },
+    seasonality: null,
+    visaInfo: "Visto UAE gratuito per molte nazionalità",
+    lastVerified: "2026-03-10",
+    active: true,
+    notes: "Non si sceglie l'hotel. Separato dai 'Dubai Stopover packages' a pagamento (multi-notte con sconti)."
+  },
+  {
+    id: "ethiopian-add",
+    airline: "Ethiopian Airlines",
+    iata: "ET",
+    alliance: "Star Alliance",
+    hub: "Addis Abeba",
+    hubIata: "ADD",
+    country: "Etiopia",
+    tier: 1,
+    tierLabel: "Hotel Gratuito",
+    maxNights: 1,
+    maxHours: 24,
+    minLayoverHours: 8,
+    hotelIncluded: true,
+    hotelDetails: "1 notte gratuita allo Skylight In-Terminal Hotel con trasferimenti e colazione.",
+    additionalPerks: ["Colazione inclusa", "Trasferimenti aeroporto-hotel", "97 camere in 5 categorie"],
+    eligibility: "Layover 8-24 ore su voli in connessione Ethiopian Airlines",
+    cabinRestrictions: null,
+    bookingMethod: "Automatico al check-in o tramite servizio clienti",
+    bookingUrl: "https://www.ethiopianairlines.com",
+    advanceBookingDays: 0,
+    estimatedValueEur: { economy: 80, business: 80 },
+    seasonality: null,
+    visaInfo: "eVisa disponibile per la maggior parte delle nazionalità",
+    lastVerified: "2026-01-30",
+    active: true,
+    notes: "Hotel in-terminal, molto comodo. Buona opzione per voli verso Africa sub-sahariana."
+  },
+  {
+    id: "airchina-multi",
+    airline: "Air China",
+    iata: "CA",
+    alliance: "Star Alliance",
+    hub: "Beijing / Chengdu / Shanghai / Hangzhou / Tianjin / Chongqing",
+    hubIata: "PEK,CTU,PVG,HGH,TSN,CKG",
+    country: "Cina",
+    tier: 1,
+    tierLabel: "Hotel Gratuito",
+    maxNights: 1,
+    maxHours: 30,
+    minLayoverHours: 6,
+    hotelIncluded: true,
+    hotelDetails: "1 notte gratuita in hotel, colazione e trasferimenti aeroporto-hotel in 6 città hub.",
+    additionalPerks: ["Colazione inclusa", "Trasferimenti inclusi", "Disponibile in 6 hub diversi"],
+    eligibility: "Passeggeri internazionali in transito con layover 6-30 ore",
+    cabinRestrictions: null,
+    bookingMethod: "Richiedere al check-in o tramite servizio clienti",
+    bookingUrl: "https://www.airchina.com",
+    advanceBookingDays: 0,
+    estimatedValueEur: { economy: 70, business: 100 },
+    seasonality: null,
+    visaInfo: "Transito 144h visa-free in molti hub cinesi per 54 nazionalità",
+    lastVerified: "2026-02-15",
+    active: true,
+    notes: "Combinabile con la policy di transito visa-free 144h della Cina."
+  },
+  {
+    id: "singapore-sin",
+    airline: "Singapore Airlines",
+    iata: "SQ",
+    alliance: "Star Alliance",
+    hub: "Singapore",
+    hubIata: "SIN",
+    country: "Singapore",
+    tier: 1,
+    tierLabel: "Hotel Gratuito (Business/First)",
+    maxNights: 2,
+    maxHours: 720, // 30 days
+    minLayoverHours: 24,
+    hotelIncluded: true,
+    hotelDetails: "Business/First: 1-2 notti hotel gratuite + tour + trasporti + SGD 40 Changi. Economy: SGD 20 voucher Changi.",
+    additionalPerks: ["Lounge access tutte le classi", "Tour Singapore gratuiti", "City tour gratuito per connessioni 5.5+ ore", "Night tour esclusivo premium"],
+    eligibility: "Layover 24h-30 giorni. Hotel gratis solo Business/First. Economy: voucher.",
+    cabinRestrictions: "Hotel gratuito solo Business/First Class",
+    bookingMethod: "Aggiungere durante prenotazione su singaporeair.com",
+    bookingUrl: "https://hbth.singaporeair.com",
+    advanceBookingDays: 0,
+    estimatedValueEur: { economy: 20, business: 280 },
+    seasonality: null,
+    visaInfo: "Visa-free per EU, molte nazionalità",
+    lastVerified: "2026-03-01",
+    active: true,
+    notes: "Programma 'Holiday Before the Holiday' lanciato gennaio 2025. Changi Airport è un'attrazione in sé."
+  },
+
+  // ─── TIER 2: HEAVILY DISCOUNTED HOTEL / PAID PACKAGES ───
+  {
+    id: "qatar-doh",
+    airline: "Qatar Airways",
+    iata: "QR",
+    alliance: "oneworld",
+    hub: "Doha",
+    hubIata: "DOH",
+    country: "Qatar",
+    tier: 2,
+    tierLabel: "Hotel Scontato",
+    maxNights: 4,
+    maxHours: 96,
+    minLayoverHours: 12,
+    hotelIncluded: false,
+    hotelDetails: "Hotel 4-5 stelle da $14/notte via Discover Qatar. Pacchetti Standard, Premium, Premium Beach, Luxury.",
+    additionalPerks: ["Tour 48h in Doha", "Upgrade camera in hotel selezionati", "Sconti ristoranti 30%", "Massaggio jet-lag scontato", "Visto transito gratuito"],
+    eligibility: "Layover 12-96 ore. Prenotazione minimo 3 giorni prima.",
+    cabinRestrictions: null,
+    bookingMethod: "Discover Qatar durante prenotazione volo",
+    bookingUrl: "https://www.qatarairways.com/en/offers/qatar-stopover.html",
+    advanceBookingDays: 3,
+    estimatedValueEur: { economy: 130, business: 200 },
+    seasonality: null,
+    visaInfo: "Visto transito gratuito con prenotazione Discover Qatar",
+    lastVerified: "2026-03-10",
+    active: true,
+    notes: "Non gratuito ma eccezionale rapporto qualità/prezzo. $14/notte per hotel 4 stelle."
+  },
+  {
+    id: "saudia-multi",
+    airline: "Saudia",
+    iata: "SV",
+    alliance: "SkyTeam",
+    hub: "Riyadh / Jeddah",
+    hubIata: "RUH,JED",
+    country: "Arabia Saudita",
+    tier: 2,
+    tierLabel: "Hotel + Visto Gratuiti",
+    maxNights: 4,
+    maxHours: 96,
+    minLayoverHours: 12,
+    hotelIncluded: true,
+    hotelDetails: "Soggiorni hotel complementari e visto di transito gratuito 'Your Ticket Your Visa'.",
+    additionalPerks: ["Visto transito automatico alla prenotazione", "Fino a 96h nel Regno"],
+    eligibility: "Layover 12+ ore su voli Saudia",
+    cabinRestrictions: null,
+    bookingMethod: "Saudia.com/transit-visa durante prenotazione",
+    bookingUrl: "https://www.saudia.com/transit-visa",
+    advanceBookingDays: 0,
+    estimatedValueEur: { economy: 100, business: 150 },
+    seasonality: null,
+    visaInfo: "Visto transito gratuito automatico con 'Your Ticket Your Visa'",
+    lastVerified: "2026-02-01",
+    active: true,
+    notes: "Programma relativamente nuovo (2023). Ottimo per esplorare Riyadh o Jeddah."
+  },
+  {
+    id: "koreanair-icn",
+    airline: "Korean Air",
+    iata: "KE",
+    alliance: "SkyTeam",
+    hub: "Seoul",
+    hubIata: "ICN",
+    country: "Corea del Sud",
+    tier: 2,
+    tierLabel: "Pacchetto a Pagamento",
+    maxNights: 2,
+    maxHours: 48,
+    minLayoverHours: 4,
+    hotelIncluded: false,
+    hotelDetails: "K-Stopover: pacchetti da $390 con hotel 3-5 stelle, pasti, tour guidati, trasporti.",
+    additionalPerks: ["Visita Blue House", "HiKR Ground K-pop center", "5 pasti coreani", "Tour gratuiti Incheon per transiti 4-24h"],
+    eligibility: "Pacchetti a pagamento. Tour gratuiti per transiti 4-24h senza visto.",
+    cabinRestrictions: null,
+    bookingMethod: "k-stopover.com o desk K-Stopover aeroporto Incheon",
+    bookingUrl: "https://k-stopover.com",
+    advanceBookingDays: 3,
+    estimatedValueEur: { economy: 50, business: 50 },
+    seasonality: null,
+    visaInfo: "Transito visa-free per molte nazionalità a Incheon",
+    lastVerified: "2026-02-20",
+    active: true,
+    notes: "Il valore gratis è nei tour aeroportuali. I pacchetti a pagamento sono costosi ma completi."
+  },
+  {
+    id: "asiana-icn",
+    airline: "Asiana Airlines",
+    iata: "OZ",
+    alliance: "Star Alliance",
+    hub: "Seoul",
+    hubIata: "ICN",
+    country: "Corea del Sud",
+    tier: 2,
+    tierLabel: "Hotel Possibile (STPC)",
+    maxNights: 1,
+    maxHours: 24,
+    minLayoverHours: 4,
+    hotelIncluded: false,
+    hotelDetails: "Stop & Joy Seoul: pacchetti con hotel, lounge, duty-free. STPC (hotel gratis) per rotte selezionate e business class.",
+    additionalPerks: ["Tour gratuiti 4-24h da Incheon", "Lounge access Star Alliance Gold", "Sconti duty-free", "Bonus Asiana miles"],
+    eligibility: "STPC: richiedere via email min 1 giorno prima. Tour gratuiti: transiti 4-24h.",
+    cabinRestrictions: "STPC gratuito solo su rotte selezionate / business class",
+    bookingMethod: "Email Asiana per STPC, tour prenotabili in aeroporto",
+    bookingUrl: "https://flyasiana.com",
+    advanceBookingDays: 1,
+    estimatedValueEur: { economy: 30, business: 120 },
+    seasonality: null,
+    visaInfo: "Transito visa-free Incheon",
+    lastVerified: "2026-02-20",
+    active: true,
+    notes: "Korean Air ha acquisito Asiana, brand in fase di merge entro fine 2026. Verificare stato programma."
+  },
+  {
+    id: "royalairmaroc-cmn",
+    airline: "Royal Air Maroc",
+    iata: "AT",
+    alliance: "oneworld",
+    hub: "Casablanca",
+    hubIata: "CMN",
+    country: "Marocco",
+    tier: 2,
+    tierLabel: "Hotel per Layover Lunghi",
+    maxNights: 1,
+    maxHours: null,
+    minLayoverHours: 4,
+    hotelIncluded: false,
+    hotelDetails: "4-8h: voucher pasto + Oasis Lounge. 8h+: voucher pasto + hotel (soggetto a disponibilità) o Relax Lounge.",
+    additionalPerks: ["Lounge Oasis per transiti 4-8h", "Voucher pasto incluso", "Nessun limite di durata stopover"],
+    eligibility: "Transiti 4+ ore. Hotel soggetto a disponibilità per 8h+.",
+    cabinRestrictions: null,
+    bookingMethod: "Telefonare al 800-344-6726",
+    bookingUrl: "https://www.royalairmaroc.com",
+    advanceBookingDays: 0,
+    estimatedValueEur: { economy: 60, business: 80 },
+    seasonality: null,
+    visaInfo: "Verificare requisiti visto Marocco",
+    lastVerified: "2026-01-15",
+    active: true,
+    notes: "Prenotazione solo telefonica. Casablanca è un ottimo gateway per il Marocco."
+  },
+
+  // ─── TIER 3: FREE ROUTING (NO HOTEL) ───
+  {
+    id: "icelandair-kef",
+    airline: "Icelandair",
+    iata: "FI",
+    alliance: "None",
+    hub: "Reykjavik",
+    hubIata: "KEF",
+    country: "Islanda",
+    tier: 3,
+    tierLabel: "Routing Gratuito",
+    maxNights: 7,
+    maxHours: 168,
+    minLayoverHours: 24,
+    hotelIncluded: false,
+    hotelDetails: "Nessun hotel incluso. Sconti partner su alloggi e attività.",
+    additionalPerks: ["Pioniere dei programmi stopover", "Fino a 7 giorni senza costo extra", "Opzione 'Stopover in Iceland' nel booking engine"],
+    eligibility: "Voli transatlantici Icelandair",
+    cabinRestrictions: null,
+    bookingMethod: "Opzione 'Stopover in Iceland' durante prenotazione",
+    bookingUrl: "https://www.icelandair.com/flights/stopover/",
+    advanceBookingDays: 0,
+    estimatedValueEur: { economy: 0, business: 0 },
+    seasonality: "Aurora boreale inverno, sole di mezzanotte estate",
+    visaInfo: "Schengen - EU visa-free",
+    lastVerified: "2026-03-01",
+    active: true,
+    notes: "Il programma che ha inventato il concetto di stopover. Islanda costosa ma unica."
+  },
+  {
+    id: "tap-lis",
+    airline: "TAP Air Portugal",
+    iata: "TP",
+    alliance: "Star Alliance",
+    hub: "Lisbona / Porto",
+    hubIata: "LIS,OPO",
+    country: "Portogallo",
+    tier: 3,
+    tierLabel: "Routing Gratuito",
+    maxNights: 10,
+    maxHours: 240,
+    minLayoverHours: 24,
+    hotelIncluded: false,
+    hotelDetails: "Nessun hotel gratuito. Sconti hotel partner in Lisbona, Porto, Azzorre e oltre.",
+    additionalPerks: ["Fino a 10 giorni", "25% sconto voli domestici Portogallo", "City pass scontati", "Sconti musei e ristoranti", "Premiato miglior stopover program 6 anni consecutivi"],
+    eligibility: "Voli TAP intercontinentali o Europa con connessione Lisbona/Porto",
+    cabinRestrictions: null,
+    bookingMethod: "Portugal Stopover durante prenotazione su flytap.com",
+    bookingUrl: "https://www.flytap.com/en-us/stopover",
+    advanceBookingDays: 0,
+    estimatedValueEur: { economy: 0, business: 0 },
+    seasonality: null,
+    visaInfo: "Schengen - EU visa-free",
+    lastVerified: "2026-03-01",
+    active: true,
+    notes: "Vinto Global Traveler 'Best Stopover Program' 6 anni di fila. Ottimo per esplorare Portogallo."
+  },
+  {
+    id: "iberia-mad",
+    airline: "Iberia",
+    iata: "IB",
+    alliance: "oneworld",
+    hub: "Madrid",
+    hubIata: "MAD",
+    country: "Spagna",
+    tier: 3,
+    tierLabel: "Routing Gratuito",
+    maxNights: 9,
+    maxHours: 216,
+    minLayoverHours: 24,
+    hotelIncluded: false,
+    hotelDetails: "Nessun hotel gratuito. Sconti Meliá Hotels e altri partner.",
+    additionalPerks: ["Carta trasporti 2 giorni gratuita", "Sconti musei (Prado, Thyssen-Bornemisza)", "20% off tour e attrazioni", "VIP shopping El Corte Inglés", "Sconti trasferimenti aeroporto"],
+    eligibility: "Voli Iberia con connessione Madrid",
+    cabinRestrictions: null,
+    bookingMethod: "Hola Madrid durante prenotazione su iberia.com",
+    bookingUrl: "https://www.iberia.com/en/fly-with-iberia/hola-madrid/",
+    advanceBookingDays: 0,
+    estimatedValueEur: { economy: 30, business: 30 },
+    seasonality: null,
+    visaInfo: "Schengen - EU visa-free",
+    lastVerified: "2026-02-15",
+    active: true,
+    notes: "Carta trasporti gratuita è un buon valore aggiunto. Madrid è un hub fantastico per il Sud America."
+  },
+  {
+    id: "copa-pty",
+    airline: "Copa Airlines",
+    iata: "CM",
+    alliance: "Star Alliance",
+    hub: "Panama City",
+    hubIata: "PTY",
+    country: "Panama",
+    tier: 3,
+    tierLabel: "Routing Gratuito",
+    maxNights: 7,
+    maxHours: 168,
+    minLayoverHours: 24,
+    hotelIncluded: false,
+    hotelDetails: "Nessun hotel gratuito. Sconti su hotel, ristoranti e attività via portale stopover.",
+    additionalPerks: ["1-7 giorni senza costo extra", "Sconti hotel partner", "Sconti ristoranti e attività"],
+    eligibility: "Voli Copa Airlines con connessione Panama City",
+    cabinRestrictions: null,
+    bookingMethod: "Multi-city su copaair.com",
+    bookingUrl: "https://www.copaair.com",
+    advanceBookingDays: 0,
+    estimatedValueEur: { economy: 0, business: 0 },
+    seasonality: null,
+    visaInfo: "Verificare requisiti visto Panama",
+    lastVerified: "2026-02-01",
+    active: true,
+    notes: "Ottimo hub per Centro e Sud America."
+  },
+  {
+    id: "cathay-hkg",
+    airline: "Cathay Pacific",
+    iata: "CX",
+    alliance: "oneworld",
+    hub: "Hong Kong",
+    hubIata: "HKG",
+    country: "Hong Kong",
+    tier: 3,
+    tierLabel: "Routing Gratuito",
+    maxNights: 7,
+    maxHours: 168,
+    minLayoverHours: 7,
+    hotelIncluded: false,
+    hotelDetails: "Nessun hotel gratuito. 5% sconto hotel selezionati. Business: Airport Express gratuito.",
+    additionalPerks: ["Fino a 7 giorni", "Airport Express gratis (business)", "5% off hotel", "Tour guidati gratuiti per transiti 7h+", "Accesso Greater Bay Area (Macau, mainland)"],
+    eligibility: "Rotte da Nord America, Europa, Australia, Nuova Zelanda",
+    cabinRestrictions: "Airport Express gratis solo Business",
+    bookingMethod: "Multi-city su cathaypacific.com",
+    bookingUrl: "https://www.cathaypacific.com",
+    advanceBookingDays: 0,
+    estimatedValueEur: { economy: 10, business: 40 },
+    seasonality: null,
+    visaInfo: "Visa-free per EU e molte nazionalità",
+    lastVerified: "2026-03-01",
+    active: true,
+    notes: "Tour gratuiti dall'aeroporto disponibili da dicembre 2025, prenotabili fino a 3 mesi prima."
+  },
+  {
+    id: "jal-nrt",
+    airline: "Japan Airlines",
+    iata: "JL",
+    alliance: "oneworld",
+    hub: "Tokyo / Osaka",
+    hubIata: "NRT,HND,KIX,ITM",
+    country: "Giappone",
+    tier: 3,
+    tierLabel: "Routing Gratuito",
+    maxNights: 6,
+    maxHours: 144,
+    minLayoverHours: 24,
+    hotelIncluded: false,
+    hotelDetails: "Nessun hotel incluso. $100 fee per passeggeri USA/Canada/Messico/Cina. Gratis per altre nazionalità.",
+    additionalPerks: ["Connessioni domestiche gratuite verso 30+ città", "Japan Explorer Pass scontato", "Fino a 6 notti"],
+    eligibility: "Voli JAL internazionali. $100 fee per USA/Canada/Messico/Cina.",
+    cabinRestrictions: null,
+    bookingMethod: "Multi-city su jal.com o tramite agente",
+    bookingUrl: "https://www.jal.com",
+    advanceBookingDays: 0,
+    estimatedValueEur: { economy: 0, business: 0 },
+    seasonality: "Sakura (marzo-aprile), foliage (novembre)",
+    visaInfo: "Visa-free per EU",
+    lastVerified: "2026-02-15",
+    active: true,
+    notes: "Le connessioni domestiche gratuite sono un valore enorme per esplorare il Giappone."
+  },
+  {
+    id: "fiji-nan",
+    airline: "Fiji Airways",
+    iata: "FJ",
+    alliance: "oneworld",
+    hub: "Nadi",
+    hubIata: "NAN",
+    country: "Fiji",
+    tier: 3,
+    tierLabel: "Routing Gratuito",
+    maxNights: 4,
+    maxHours: 96,
+    minLayoverHours: 24,
+    hotelIncluded: false,
+    hotelDetails: "Nessun hotel gratuito. Partnership con resort locali ($192-1500/notte).",
+    additionalPerks: ["Esenzione departure tax per soggiorni sotto 96h", "Resort partner scontati"],
+    eligibility: "Voli Fiji Airways con connessione Nadi",
+    cabinRestrictions: null,
+    bookingMethod: "Multi-city/Fiji Stopover su fijiairways.com",
+    bookingUrl: "https://www.fijiairways.com/en-eu/book/fiji-stopover",
+    advanceBookingDays: 0,
+    estimatedValueEur: { economy: 20, business: 20 },
+    seasonality: "Stagione secca: maggio-ottobre",
+    visaInfo: "Visa-free per molte nazionalità",
+    lastVerified: "2026-01-20",
+    active: true,
+    notes: "Entrata in oneworld come membro pieno a marzo 2025. Risparmio sulla departure tax è significativo."
+  },
+  {
+    id: "lot-waw",
+    airline: "LOT Polish Airlines",
+    iata: "LO",
+    alliance: "Star Alliance",
+    hub: "Varsavia",
+    hubIata: "WAW",
+    country: "Polonia",
+    tier: 3,
+    tierLabel: "Routing Gratuito",
+    maxNights: 2,
+    maxHours: 48,
+    minLayoverHours: 24,
+    hotelIncluded: false,
+    hotelDetails: "Nessun hotel gratuito. Programma lanciato 2025.",
+    additionalPerks: ["25% sconto voli domestici", "30% sconto pasto a bordo cucina polacca"],
+    eligibility: "Voli LOT con connessione Varsavia",
+    cabinRestrictions: null,
+    bookingMethod: "Tramite lot.com",
+    bookingUrl: "https://www.lot.com",
+    advanceBookingDays: 0,
+    estimatedValueEur: { economy: 0, business: 0 },
+    seasonality: null,
+    visaInfo: "Schengen - EU visa-free",
+    lastVerified: "2026-01-15",
+    active: true,
+    notes: "Programma nuovo (2025). Varsavia è economica e ottimo gateway per Europa dell'Est."
+  },
+  {
+    id: "finnair-hel",
+    airline: "Finnair",
+    iata: "AY",
+    alliance: "oneworld",
+    hub: "Helsinki",
+    hubIata: "HEL",
+    country: "Finlandia",
+    tier: 3,
+    tierLabel: "Layover Lungo",
+    maxNights: 1,
+    maxHours: 24,
+    minLayoverHours: 6,
+    hotelIncluded: false,
+    hotelDetails: "Nessun hotel o programma formale. Guide ufficiali per layover 6h, 12h, 24h.",
+    additionalPerks: ["Guide ufficiali Helsinki per layover", "Connessione rapida città-aeroporto (30 min treno)"],
+    eligibility: "Layover lungo a Helsinki su rotte Finnair",
+    cabinRestrictions: null,
+    bookingMethod: "Nessun programma formale, solo routing via Helsinki",
+    bookingUrl: "https://www.finnair.com",
+    advanceBookingDays: 0,
+    estimatedValueEur: { economy: 0, business: 0 },
+    seasonality: "Aurora boreale inverno, sole di mezzanotte estate",
+    visaInfo: "Schengen - EU visa-free",
+    lastVerified: "2026-02-01",
+    active: true,
+    notes: "Nessun programma formale ma Helsinki è facilissima da esplorare in poche ore."
+  },
+  {
+    id: "eva-tpe",
+    airline: "EVA Air",
+    iata: "BR",
+    alliance: "Star Alliance",
+    hub: "Taipei",
+    hubIata: "TPE",
+    country: "Taiwan",
+    tier: 3,
+    tierLabel: "Routing Economico",
+    maxNights: 7,
+    maxHours: 168,
+    minLayoverHours: 24,
+    hotelIncluded: false,
+    hotelDetails: "Nessun programma formale. Tariffe multi-city spesso identiche o inferiori alle connessioni dirette.",
+    additionalPerks: ["Routing flessibile", "Prezzi competitivi su multi-city"],
+    eligibility: "Tariffe multi-city EVA Air",
+    cabinRestrictions: null,
+    bookingMethod: "Multi-city su evaair.com",
+    bookingUrl: "https://www.evaair.com",
+    advanceBookingDays: 0,
+    estimatedValueEur: { economy: 0, business: 0 },
+    seasonality: null,
+    visaInfo: "Visa-free per EU",
+    lastVerified: "2026-01-15",
+    active: true,
+    notes: "Non pubblicizzato ma nella pratica le tariffe con stopover costano quanto le dirette."
+  },
+  {
+    id: "sas-cph",
+    airline: "SAS",
+    iata: "SK",
+    alliance: "SkyTeam",
+    hub: "Copenaghen",
+    hubIata: "CPH",
+    country: "Danimarca",
+    tier: 3,
+    tierLabel: "Routing Gratuito",
+    maxNights: 3,
+    maxHours: 72,
+    minLayoverHours: 24,
+    hotelIncluded: false,
+    hotelDetails: "Nessun hotel incluso. Stopover consentiti su tariffe idonee.",
+    additionalPerks: ["Routing flessibile via hub scandinavi"],
+    eligibility: "Tariffe idonee via Copenaghen. Organizzare tramite servizio clienti.",
+    cabinRestrictions: null,
+    bookingMethod: "Contattare servizio clienti SAS",
+    bookingUrl: "https://www.flysas.com",
+    advanceBookingDays: 0,
+    estimatedValueEur: { economy: 0, business: 0 },
+    seasonality: null,
+    visaInfo: "Schengen - EU visa-free",
+    lastVerified: "2026-01-20",
+    active: true,
+    notes: "SAS ora in SkyTeam (ex Star Alliance). Copenaghen è fantastica per un city break."
+  }
+];
+
+// 
+
+// ── STOPOVER LOGIC ────────────────────────────────────────────
+const HUB_IATA_SET = new Set();
+STOPOVER_PROGRAMS.forEach(p => {
+  p.hubIata.split(",").forEach(code => HUB_IATA_SET.add(code.trim()));
+});
+
+function getProgramsByHub(iataCode) {
+  return STOPOVER_PROGRAMS.filter(p =>
+    p.active && p.hubIata.split(",").map(c => c.trim()).includes(iataCode)
+  );
+}
+
+// ── SCORING ENGINE ──────────────────────────────────────────
+function calculateStopoverScore(program, flightData = {}) {
+  const cabin = flightData.cabin || "economy";
+  let score = 0;
+  const breakdown = {};
+
+  // 1. Hotel value (0-40 points)
+  const hotelValue = program.estimatedValueEur[cabin] || program.estimatedValueEur.economy || 0;
+  breakdown.hotelValue = Math.min(40, Math.round(hotelValue / 8));
+  score += breakdown.hotelValue;
+
+  // 2. Tier bonus (0-25 points)
+  breakdown.tierBonus = program.tier === 1 ? 25 : program.tier === 2 ? 15 : 5;
+  score += breakdown.tierBonus;
+
+  // 3. Flexibility (0-15 points) — more max nights = more flexible
+  breakdown.flexibility = Math.min(15, Math.round((program.maxNights || 1) * 2));
+  score += breakdown.flexibility;
+
+  // 4. Ease of booking (0-10 points)
+  breakdown.easeOfBooking = program.advanceBookingDays === 0 ? 10 : program.advanceBookingDays <= 1 ? 7 : 4;
+  score += breakdown.easeOfBooking;
+
+  // 5. Additional perks count (0-10 points)
+  breakdown.perksBonus = Math.min(10, (program.additionalPerks?.length || 0) * 2);
+  score += breakdown.perksBonus;
+
+  return { score: Math.min(100, score), breakdown, estimatedSavingsEur: hotelValue };
+}
+
+// ── MATCHING ENGINE ─────────────────────────────────────────
+function findStopoverOpportunities(origin, destination, connectionHub, layoverHours, cabin) {
+  const programs = getProgramsByHub(connectionHub);
+  return programs
+    .filter(p => layoverHours >= p.minLayoverHours && (p.maxHours === null || layoverHours <= p.maxHours))
+    .map(p => ({
+      ...p,
+      scoring: calculateStopoverScore(p, { cabin }),
+      layoverHours
+    }))
+    .sort((a, b) => b.scoring.score - a.scoring.score);
+}
+
+// ── UI COMPONENTS ───────────────────────────────────────────
+
+const TIER_COLORS = {
+  1: { bg: "#0d3320", border: "#22c55e", text: "#4ade80", badge: "#15803d", label: "HOTEL GRATIS" },
+  2: { bg: "#1e1b4b", border: "#818cf8", text: "#a5b4fc", badge: "#4338ca", label: "SCONTATO" },
+  3: { bg: "#1c1917", border: "#a8a29e", text: "#d6d3d1", badge: "#57534e", label: "ROUTING" }
+};
+
+
+
+
+
+  // ── Destinazioni overnight-compatibili per aeroporto ──────────────────────
+  // Solo destinazioni con volo >= 4h dove ha senso sfruttare la notte
+  const OVERNIGHT_DESTINATIONS = {
+    // Hub primari: connettività intercontinentale completa
+    MXP: [
+      { code:"DXB", city:"Dubai",        country:"EAU",         flag:"🇦🇪", h:6.0, zone:"Golfo" },
+      { code:"DOH", city:"Doha",         country:"Qatar",       flag:"🇶🇦", h:6.5, zone:"Golfo" },
+      { code:"AUH", city:"Abu Dhabi",    country:"EAU",         flag:"🇦🇪", h:6.0, zone:"Golfo" },
+      { code:"RUH", city:"Riyadh",       country:"Arabia S.",   flag:"🇸🇦", h:5.5, zone:"Golfo" },
+      { code:"KWI", city:"Kuwait City",  country:"Kuwait",      flag:"🇰🇼", h:5.5, zone:"Golfo" },
+      { code:"NBO", city:"Nairobi",      country:"Kenya",       flag:"🇰🇪", h:8.5, zone:"Africa E." },
+      { code:"ADD", city:"Addis Abeba",  country:"Etiopia",     flag:"🇪🇹", h:7.0, zone:"Africa E." },
+      { code:"JNB", city:"Johannesburg", country:"Sud Africa",  flag:"🇿🇦", h:10.0,zone:"Africa S." },
+      { code:"LOS", city:"Lagos",        country:"Nigeria",     flag:"🇳🇬", h:6.0, zone:"Africa O." },
+      { code:"ACC", city:"Accra",        country:"Ghana",       flag:"🇬🇭", h:6.0, zone:"Africa O." },
+      { code:"BOM", city:"Mumbai",       country:"India",       flag:"🇮🇳", h:9.0, zone:"Asia S." },
+      { code:"DEL", city:"Delhi",        country:"India",       flag:"🇮🇳", h:8.5, zone:"Asia S." },
+      { code:"GRU", city:"São Paulo",    country:"Brasile",     flag:"🇧🇷", h:12.0,zone:"America S." },
+      { code:"EZE", city:"Buenos Aires", country:"Argentina",   flag:"🇦🇷", h:14.0,zone:"America S." },
+    ],
+    FCO: [
+      { code:"DXB", city:"Dubai",        country:"EAU",         flag:"🇦🇪", h:6.0, zone:"Golfo" },
+      { code:"DOH", city:"Doha",         country:"Qatar",       flag:"🇶🇦", h:6.5, zone:"Golfo" },
+      { code:"AUH", city:"Abu Dhabi",    country:"EAU",         flag:"🇦🇪", h:6.0, zone:"Golfo" },
+      { code:"RUH", city:"Riyadh",       country:"Arabia S.",   flag:"🇸🇦", h:5.5, zone:"Golfo" },
+      { code:"AMM", city:"Amman",        country:"Giordania",   flag:"🇯🇴", h:4.0, zone:"Golfo" },
+      { code:"NBO", city:"Nairobi",      country:"Kenya",       flag:"🇰🇪", h:8.5, zone:"Africa E." },
+      { code:"ADD", city:"Addis Abeba",  country:"Etiopia",     flag:"🇪🇹", h:7.0, zone:"Africa E." },
+      { code:"JNB", city:"Johannesburg", country:"Sud Africa",  flag:"🇿🇦", h:10.0,zone:"Africa S." },
+      { code:"LOS", city:"Lagos",        country:"Nigeria",     flag:"🇳🇬", h:6.0, zone:"Africa O." },
+      { code:"CMN", city:"Casablanca",   country:"Marocco",     flag:"🇲🇦", h:4.0, zone:"Africa N." },
+      { code:"BOM", city:"Mumbai",       country:"India",       flag:"🇮🇳", h:9.0, zone:"Asia S." },
+      { code:"DEL", city:"Delhi",        country:"India",       flag:"🇮🇳", h:8.5, zone:"Asia S." },
+      { code:"GRU", city:"São Paulo",    country:"Brasile",     flag:"🇧🇷", h:12.0,zone:"America S." },
+      { code:"BOG", city:"Bogotà",       country:"Colombia",    flag:"🇨🇴", h:11.0,zone:"America S." },
+    ],
+    NAP: [
+      { code:"DXB", city:"Dubai",        country:"EAU",         flag:"🇦🇪", h:6.0, zone:"Golfo" },
+      { code:"DOH", city:"Doha",         country:"Qatar",       flag:"🇶🇦", h:6.5, zone:"Golfo" },
+      { code:"AUH", city:"Abu Dhabi",    country:"EAU",         flag:"🇦🇪", h:6.0, zone:"Golfo" },
+      { code:"NBO", city:"Nairobi",      country:"Kenya",       flag:"🇰🇪", h:8.5, zone:"Africa E." },
+      { code:"ADD", city:"Addis Abeba",  country:"Etiopia",     flag:"🇪🇹", h:7.0, zone:"Africa E." },
+      { code:"CMN", city:"Casablanca",   country:"Marocco",     flag:"🇲🇦", h:4.0, zone:"Africa N." },
+      { code:"LOS", city:"Lagos",        country:"Nigeria",     flag:"🇳🇬", h:6.0, zone:"Africa O." },
+      { code:"BOM", city:"Mumbai",       country:"India",       flag:"🇮🇳", h:9.0, zone:"Asia S." },
+    ],
+    BGY: [
+      { code:"DXB", city:"Dubai",        country:"EAU",         flag:"🇦🇪", h:6.0, zone:"Golfo" },
+      { code:"DOH", city:"Doha",         country:"Qatar",       flag:"🇶🇦", h:6.5, zone:"Golfo" },
+      { code:"NBO", city:"Nairobi",      country:"Kenya",       flag:"🇰🇪", h:8.5, zone:"Africa E." },
+      { code:"ADD", city:"Addis Abeba",  country:"Etiopia",     flag:"🇪🇹", h:7.0, zone:"Africa E." },
+      { code:"CMN", city:"Casablanca",   country:"Marocco",     flag:"🇲🇦", h:4.0, zone:"Africa N." },
+      { code:"LOS", city:"Lagos",        country:"Nigeria",     flag:"🇳🇬", h:6.0, zone:"Africa O." },
+    ],
+    VCE: [
+      { code:"DXB", city:"Dubai",        country:"EAU",         flag:"🇦🇪", h:6.0, zone:"Golfo" },
+      { code:"DOH", city:"Doha",         country:"Qatar",       flag:"🇶🇦", h:6.5, zone:"Golfo" },
+      { code:"ADD", city:"Addis Abeba",  country:"Etiopia",     flag:"🇪🇹", h:7.0, zone:"Africa E." },
+      { code:"CMN", city:"Casablanca",   country:"Marocco",     flag:"🇲🇦", h:4.0, zone:"Africa N." },
+    ],
+    BLQ: [
+      { code:"DXB", city:"Dubai",        country:"EAU",         flag:"🇦🇪", h:6.0, zone:"Golfo" },
+      { code:"DOH", city:"Doha",         country:"Qatar",       flag:"🇶🇦", h:6.5, zone:"Golfo" },
+      { code:"ADD", city:"Addis Abeba",  country:"Etiopia",     flag:"🇪🇹", h:7.0, zone:"Africa E." },
+      { code:"CMN", city:"Casablanca",   country:"Marocco",     flag:"🇲🇦", h:4.0, zone:"Africa N." },
+    ],
+    CTA: [
+      { code:"DXB", city:"Dubai",        country:"EAU",         flag:"🇦🇪", h:6.5, zone:"Golfo" },
+      { code:"DOH", city:"Doha",         country:"Qatar",       flag:"🇶🇦", h:6.5, zone:"Golfo" },
+      { code:"AUH", city:"Abu Dhabi",    country:"EAU",         flag:"🇦🇪", h:6.5, zone:"Golfo" },
+      { code:"NBO", city:"Nairobi",      country:"Kenya",       flag:"🇰🇪", h:9.0, zone:"Africa E." },
+      { code:"ADD", city:"Addis Abeba",  country:"Etiopia",     flag:"🇪🇹", h:7.5, zone:"Africa E." },
+      { code:"CMN", city:"Casablanca",   country:"Marocco",     flag:"🇲🇦", h:4.5, zone:"Africa N." },
+    ],
+    PSA: [
+      { code:"DXB", city:"Dubai",        country:"EAU",         flag:"🇦🇪", h:6.0, zone:"Golfo" },
+      { code:"DOH", city:"Doha",         country:"Qatar",       flag:"🇶🇦", h:6.5, zone:"Golfo" },
+      { code:"CMN", city:"Casablanca",   country:"Marocco",     flag:"🇲🇦", h:4.0, zone:"Africa N." },
+      { code:"NBO", city:"Nairobi",      country:"Kenya",       flag:"🇰🇪", h:8.5, zone:"Africa E." },
+    ],
+    // ZVN: Yerevan — destinazioni overnight raggiungibili da Armenia
+    ZVN: [
+      { code:"DXB", city:"Dubai",        country:"EAU",         flag:"🇦🇪", h:4.5, zone:"Golfo" },
+      { code:"DOH", city:"Doha",         country:"Qatar",       flag:"🇶🇦", h:4.5, zone:"Golfo" },
+      { code:"AUH", city:"Abu Dhabi",    country:"EAU",         flag:"🇦🇪", h:4.5, zone:"Golfo" },
+      { code:"IST", city:"Istanbul",     country:"Turchia",     flag:"🇹🇷", h:3.5, zone:"Medio Oriente" },
+      { code:"BEY", city:"Beirut",       country:"Libano",      flag:"🇱🇧", h:3.0, zone:"Medio Oriente" },
+      { code:"TLV", city:"Tel Aviv",     country:"Israele",     flag:"🇮🇱", h:3.5, zone:"Medio Oriente" },
+      { code:"DEL", city:"Delhi",        country:"India",       flag:"🇮🇳", h:5.5, zone:"Asia S." },
+      { code:"BOM", city:"Mumbai",       country:"India",       flag:"🇮🇳", h:5.5, zone:"Asia S." },
+    ],
+    PMO: [
+      { code:"DXB", city:"Dubai",        country:"EAU",         flag:"🇦🇪", h:5.5, zone:"Golfo" },
+      { code:"DOH", city:"Doha",         country:"Qatar",       flag:"🇶🇦", h:5.5, zone:"Golfo" },
+      { code:"CMN", city:"Casablanca",   country:"Marocco",     flag:"🇲🇦", h:4.0, zone:"Africa N." },
+      { code:"ADD", city:"Addis Abeba",  country:"Etiopia",     flag:"🇪🇹", h:7.5, zone:"Africa E." },
+    ],
+    BRI: [
+      { code:"DXB", city:"Dubai",        country:"EAU",         flag:"🇦🇪", h:5.5, zone:"Golfo" },
+      { code:"DOH", city:"Doha",         country:"Qatar",       flag:"🇶🇦", h:5.5, zone:"Golfo" },
+      { code:"CMN", city:"Casablanca",   country:"Marocco",     flag:"🇲🇦", h:4.0, zone:"Africa N." },
+      { code:"NBO", city:"Nairobi",      country:"Kenya",       flag:"🇰🇪", h:8.0, zone:"Africa E." },
+    ],
+    TRN: [
+      { code:"DXB", city:"Dubai",        country:"EAU",         flag:"🇦🇪", h:6.0, zone:"Golfo" },
+      { code:"DOH", city:"Doha",         country:"Qatar",       flag:"🇶🇦", h:6.5, zone:"Golfo" },
+      { code:"CMN", city:"Casablanca",   country:"Marocco",     flag:"🇲🇦", h:4.5, zone:"Africa N." },
+    ],
+    CIA: [
+      { code:"DXB", city:"Dubai",        country:"EAU",         flag:"🇦🇪", h:6.0, zone:"Golfo" },
+      { code:"DOH", city:"Doha",         country:"Qatar",       flag:"🇶🇦", h:6.5, zone:"Golfo" },
+      { code:"AUH", city:"Abu Dhabi",    country:"EAU",         flag:"🇦🇪", h:6.0, zone:"Golfo" },
+      { code:"CMN", city:"Casablanca",   country:"Marocco",     flag:"🇲🇦", h:4.0, zone:"Africa N." },
+      { code:"NBO", city:"Nairobi",      country:"Kenya",       flag:"🇰🇪", h:8.5, zone:"Africa E." },
+    ],
+  };
+
+  // Per "miglior prezzo" usiamo anche destinazioni europee brevi
+  const BUDGET_DESTINATIONS = [
+    { code:"LIS", city:"Lisbona",    country:"Portogallo", flag:"🇵🇹" },
+    { code:"MAD", city:"Madrid",     country:"Spagna",     flag:"🇪🇸" },
+    { code:"BCN", city:"Barcellona", country:"Spagna",     flag:"🇪🇸" },
+    { code:"ATH", city:"Atene",      country:"Grecia",     flag:"🇬🇷" },
+    { code:"BUD", city:"Budapest",   country:"Ungheria",   flag:"🇭🇺" },
+    { code:"PRG", city:"Praga",      country:"Rep. Ceca",  flag:"🇨🇿" },
+    { code:"WAW", city:"Varsavia",   country:"Polonia",    flag:"🇵🇱" },
+    { code:"VIE", city:"Vienna",     country:"Austria",    flag:"🇦🇹" },
+    { code:"AMS", city:"Amsterdam",  country:"Olanda",     flag:"🇳🇱" },
+    { code:"IST", city:"Istanbul",   country:"Turchia",    flag:"🇹🇷" },
+    { code:"OPO", city:"Porto",      country:"Portogallo", flag:"🇵🇹" },
+    { code:"KRK", city:"Cracovia",   country:"Polonia",    flag:"🇵🇱" },
+    { code:"DXB", city:"Dubai",      country:"EAU",        flag:"🇦🇪" },
+    { code:"DOH", city:"Doha",       country:"Qatar",      flag:"🇶🇦" },
+    { code:"NBO", city:"Nairobi",    country:"Kenya",      flag:"🇰🇪" },
+    { code:"CMN", city:"Casablanca", country:"Marocco",    flag:"🇲🇦" },
+    { code:"EVN", city:"Yerevan",    country:"Armenia",    flag:"🇦🇲" },
+  ];
+
+  const AIRPORTS = [
+    // ── Top 12 aeroporti italiani per traffico + copertura regionale (Assaeroporti 2024) ──
+    { code:"FCO", city:"Roma Fiumicino",       city_hy:"Հռոմ Ֆիումիչինո", pax2024:49.2, region:"Centro" },
+    { code:"MXP", city:"Milano Malpensa",      city_hy:"Միլան Մալպենսա",  pax2024:28.9, region:"Nord" },
+    { code:"BGY", city:"Bergamo Orio al Serio",city_hy:"Բերգամո Որիո",    pax2024:17.4, region:"Nord" },
+    { code:"NAP", city:"Napoli Capodichino",   city_hy:"Նեապոլ",           pax2024:12.7, region:"Sud" },
+    { code:"CTA", city:"Catania Fontanarossa", city_hy:"Կատանիա",          pax2024:12.3, region:"Sicilia" },
+    { code:"VCE", city:"Venezia Marco Polo",   city_hy:"Վենետիկ",          pax2024:11.6, region:"Nord-Est" },
+    { code:"BLQ", city:"Bologna Borgo Pan.",   city_hy:"Բոlonnia",          pax2024:10.8, region:"Nord-Est" },
+    { code:"PMO", city:"Palermo Falcone Bors.",city_hy:"Պալermо",           pax2024:8.9,  region:"Sicilia" },
+    { code:"BRI", city:"Bari Karol Wojtyla",   city_hy:"Բari",              pax2024:7.3,  region:"Sud" },
+    { code:"PSA", city:"Pisa Galileo Galilei", city_hy:"Պizа",              pax2024:5.5,  region:"Centro" },
+    { code:"TRN", city:"Torino Caselle",       city_hy:"Տorino",            pax2024:4.7,  region:"Nord-Ovest" },
+    { code:"CIA", city:"Roma Ciampino",        city_hy:"Հռom Ciampino",     pax2024:4.1,  region:"Centro" },
+    // ── Armenia ──
+    { code:"ZVN", city:"Yerevan Zvartnots",    city_hy:"Երevан Zvarnots",   pax2024:null, region:"Armenia" },
+  ].filter((a,i,arr) => arr.findIndex(b=>b.code===a.code)===i); // dedup codes
+
+  // ── FUTURE: Multi-country support ────────────────────────────────────────
+  // Quando si espanderà in Francia, Spagna, Germania, ecc:
+  // 1. Creare AIRPORTS_BY_COUNTRY = { IT: [...], FR: [...], ES: [...] }
+  // 2. Aggiungere COUNTRY_SELECTOR nel form (visibile solo a utenti da quei paesi)
+  // 3. Il geoIP (Netlify header x-country) determina il paese di default
+  // 4. Le rotte Ryanair/Wizz vanno espanse per aeroporto
+  // 5. La lingua si espande con TRANSLATIONS.fr, .es, .de
+  // Per ora: solo IT + ZVN. Sistema progettato per scalare.
+  //
+  // Rilevamento paese (già disponibile nei Netlify headers):
+  // event.headers["x-country"] → "IT", "FR", "DE", ...
+  // event.headers["x-language"] → "it", "fr", "de", ...
+  //
+  // Struttura prevista:
+  // /api/airports?country=FR → restituisce aeroporti francesi
+  // Frontend: if (detectedCountry !== "IT") mostra banner "Sei in Francia? Passa alla versione FR"
+
+
+  // Durate selezionabili singolarmente (multi-select)
+  const NIGHT_OPTIONS = [2, 3, 4, 5, 6, 7, 8, 10, 12, 14];
+
+  const WINDOWS = [
+    { label:"Prossime 2 settimane", days:14 },
+    { label:"Prossimo mese",        days:30 },
+    { label:"Prossimi 3 mesi",      days:90 },
+  ];
+
+  const MODES = [
+    { id:"overnight",     emoji:"🌙", label:"Overnight andata e ritorno", desc:"Voli serali (19–23h): risparmi 2 notti hotel. Solo rotte ≥4h.",  badge:"-2 notti hotel", badgeColor:"#6d28d9", savings:2 },
+    { id:"one_overnight", emoji:"🌛", label:"Solo andata notturna",       desc:"Andata serale, ritorno normale. Risparmi 1 notte.",              badge:"-1 notte hotel", badgeColor:"#0369a1", savings:1 },
+    { id:"any",           emoji:"💸", label:"Miglior prezzo assoluto",    desc:"Qualsiasi orario e destinazione, massimo risparmio sul volo.",   badge:"prezzo minimo",  badgeColor:"#b45309", savings:0 },
+  ];
+
+  // ── Utilità ───────────────────────────────────────────────────────────────
+
+  function addDays(n) {
+    const d = new Date();
+    d.setDate(d.getDate() + n);
+    return d.toISOString().split("T")[0];
+  }
+
+  function fmtDate(s) {
+    if (!s) return "—";
+    return new Date(s + "T12:00:00").toLocaleDateString("it-IT", { weekday:"long", day:"numeric", month:"long" });
+  }
+
+  function parseTime(str) {
+    if (!str) return "—";
+    const m = str.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (!m) return str;
+    let h = parseInt(m[1]);
+    if (m[3].toUpperCase() === "PM" && h !== 12) h += 12;
+    if (m[3].toUpperCase() === "AM" && h === 12) h = 0;
+    return `${String(h).padStart(2,"0")}:${m[2]}`;
+  }
+
+  function isEveningDep(timeStr) {
+    const t = parseTime(timeStr);
+    const h = parseInt(t.split(":")[0]);
+    // Fascia notturna: 19:00-23:59 e 00:00-02:00 (mezzanotte/alba)
+    return h >= 19 || h <= 2;
+  }
+
+  function buildTripLink(from, to, depDate, retDate) {
+    return `https://www.trip.com/flights/${from.toLowerCase()}-to-${to.toLowerCase()}/tickets-${from}-${to}/?depdate=${depDate}&retdate=${retDate}&class=y&quantity=1&nonstoponly=0`;
+  }
+
+  function buildGoogleLink(from, to, depDate, retDate) {
+    return `https://www.google.com/travel/flights?hl=it&curr=EUR#flt=${from}.${to}.${depDate}*${to}.${from}.${retDate};c:EUR;e:1;sd:1;t:f`;
+  }
+
+  // ── Rotte Ryanair per aeroporto (per mode "any") ─────────────────────────
+  // Rotte europee dove Ryanair opera direttamente dall'Italia
+  const RYANAIR_ROUTES = {
+    MXP: ["BCN","MAD","LIS","ATH","BUD","PRG","WAW","VIE","AMS","EDI","DUB","KRK","OPO","STN","MAN","BRS","LPL","BGY","PMI","IBZ","AGP","ALC","VLC","NAP","FCO","CAT","PMO","PSA","BRI","VRN"],
+    BGY: ["BCN","MAD","LIS","ATH","BUD","PRG","WAW","VIE","AMS","EDI","DUB","KRK","OPO","STN","PMI","IBZ","AGP","ALC","VLC","LPL","MAN"],
+    FCO: ["BCN","MAD","LIS","ATH","BUD","PRG","WAW","VIE","AMS","EDI","DUB","KRK","OPO","STN","PMI","IBZ","AGP","ALC","VLC","CMN","RAK","ORA","MXP","BGY","CTA","PMO","BRI","VRN","PSA"],
+    VCE: ["BCN","MAD","LIS","ATH","BUD","PRG","WAW","VIE","AMS","EDI","DUB","OPO","PMI","IBZ","AGP","STN","MAN"],
+    BLQ: ["BCN","MAD","LIS","ATH","BUD","PRG","WAW","VIE","AMS","EDI","DUB","OPO","PMI","IBZ","AGP","STN","CMN"],
+    NAP: ["BCN","MAD","LIS","ATH","BUD","PRG","WAW","VIE","AMS","EDI","DUB","KRK","OPO","PMI","IBZ","AGP","STN","CMN","MXP","BGY"],
+    CTA: ["BCN","MAD","LIS","ATH","BUD","PRG","WAW","VIE","AMS","EDI","DUB","OPO","PMI","IBZ","AGP","STN","CMN","MXP","BGY","FCO","NAP"],
+    PSA: ["BCN","MAD","LIS","ATH","BUD","PRG","WAW","VIE","AMS","EDI","DUB","KRK","OPO","PMI","IBZ","AGP","STN","CMN"],
+    ZVN: [], // Ryanair non opera da Yerevan
+    PMO: ["BCN","MAD","LIS","ATH","BUD","PRG","WAW","VIE","AMS","EDI","DUB","OPO","PMI","IBZ","AGP","STN"],
+    BRI: ["BCN","MAD","LIS","ATH","BUD","PRG","WAW","VIE","AMS","EDI","DUB","OPO","PMI","IBZ","AGP","STN","CMN"],
+    TRN: ["BCN","MAD","LIS","ATH","BUD","PRG","WAW","VIE","AMS","EDI","DUB","OPO","PMI","IBZ","AGP","STN","LHR"],
+    CIA: ["BCN","MAD","LIS","ATH","BUD","PRG","WAW","VIE","AMS","EDI","DUB","KRK","OPO","PMI","IBZ","AGP","STN","CMN","RAK"],
+  };
+
+  // ── Rotte Wizz Air per aeroporto ─────────────────────────────────────────
+  // Wizz forte su Europa Est, Balcani, Ucraina, Georgia, Medio Oriente
+  const WIZZAIR_ROUTES = {
+    MXP: ["BUD","KTW","WAW","KRK","LWO","TLL","RIX","VNO","SOF","OTP","CLJ","BCM","IAS","TGD","SKP","PRN","TIA","LCA","BGY"],
+    BGY: ["BUD","KTW","WAW","KRK","SOF","OTP","CLJ","TGD","SKP","TIA","LCA","RHO","HER","CFU","CHQ"],
+    FCO: ["BUD","KTW","WAW","KRK","SOF","OTP","CLJ","TGD","SKP","TIA","LCA","CAI","AMM","TLV","AUH","DXB"],
+    VCE: ["BUD","KTW","WAW","KRK","SOF","OTP","TGD","SKP","TIA","LCA","RHO","HER"],
+    BLQ: ["BUD","KTW","WAW","SOF","OTP","TGD","SKP","TIA","LCA"],
+    NAP: ["BUD","KTW","WAW","KRK","SOF","OTP","CLJ","TGD","SKP","TIA","LCA","CAI"],
+    CTA: ["BUD","KTW","WAW","KRK","SOF","OTP","CLJ","TGD","SKP","TIA","LCA"],
+    PSA: ["BUD","KTW","WAW","KRK","SOF","OTP","TGD","SKP","TIA","LCA"],
+    PMO: ["BUD","KTW","WAW","SOF","OTP","TGD","SKP","TIA","LCA"],
+    BRI: ["BUD","KTW","WAW","SOF","OTP","TGD","SKP","TIA","LCA","CAI"],
+    TRN: ["BUD","KTW","WAW","SOF","OTP","TGD","SKP","TIA","LCA"],
+    CIA: ["BUD","KTW","WAW","KRK","SOF","OTP","CLJ","TGD","SKP","TIA","LCA","CAI","AMM","TLV","AUH","DXB"],
+    ZVN: ["MXP","FCO","VCE","BGY","BLQ","DXB","DOH","AUH","CDG","AMS","IST","BEY"],
+  };
+
+  // ── API ───────────────────────────────────────────────────────────────────
+
+  // Mese corrente e successivo per le query Ryanair
+  function currentMonths(windowDays) {
+    const months = new Set();
+    for (let i = 2; i <= Math.min(windowDays, 90); i += 20) {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      months.add(d.toISOString().slice(0, 7)); // YYYY-MM
+    }
+    return [...months].slice(0, 3);
+  }
+
+  // Giorno della settimana (0=dom,1=lun,...,6=sab)
+  function weekday(dateStr) {
+    return new Date(dateStr + "T12:00:00").getDay();
+  }
+
+  // Verifica se la combinazione dep→ret è una coppia "economica"
+  // Giovedì→Lunedì, Giovedì→Martedì, Martedì→Sabato, Mercoledì→Domenica
+  function isCheapCombo(depDate, retDate) {
+    const dep = weekday(depDate);
+    const ret = weekday(retDate);
+    return (dep === 4 && (ret === 1 || ret === 2)) || // Gio→Lun, Gio→Mar
+           (dep === 2 && ret === 6) ||                 // Mar→Sab
+           (dep === 3 && ret === 0);                   // Mer→Dom
+  }
+
+  // ── Ryanair cheapestPerDay (gratuito, no SerpApi) ─────────────────────────
+  async function fetchRyanairCheapest(from, dest, months, selectedNights, budget) {
+    const results = [];
+    for (const month of months) {
+      try {
+        const res = await Promise.race([
+          fetch(`/api/ryanair?from=${from}&to=${dest.code}&month=${month}`),
+          new Promise((_,rej) => setTimeout(() => rej(new Error("timeout")), 10000))
+        ]);
+        if (!res.ok) continue;
+        const data = await res.json();
+        if (data.noRoute || !data.outbound?.length) continue;
+
+        // Costruisce combinazioni andata+ritorno rispettando durata selezionata
+        for (const out of data.outbound) {
+          if (!out.price || out.price > budget) continue;
+          for (const nights of selectedNights) {
+            const retDate = addDays(
+              Math.round((new Date(out.date) - new Date()) / (1000*60*60*24)) + nights
+            );
+            // Cerca il prezzo di ritorno per quella data
+            const inboundDay = data.inbound?.find(d => d.date === retDate);
+            if (!inboundDay || !inboundDay.price) continue;
+            const totalPrice = Math.round(out.price + inboundDay.price);
+            if (totalPrice > budget) continue;
+
+            results.push({
+              mode: "any",
+              source: "ryanair",
+              destination: dest.city, country: dest.country, flag: dest.flag,
+              destCode: dest.code, zone: dest.zone || "",
+              total_price: totalPrice,
+              outPrice: Math.round(out.price),
+              retPrice: Math.round(inboundDay.price),
+              hotel_nights_saved: 0,
+              depDate: out.date, retDate,
+              nights,
+              isCheapCombo: isCheapCombo(out.date, retDate),
+              depTime: "—", arrTime: "—",
+              airline: "Ryanair", stops: 0, dur: "—",
+              flightH: null,
+              trip_link: buildTripLink(from, dest.code, out.date, retDate),
+              google_link: buildGoogleLink(from, dest.code, out.date, retDate),
+              ryanair_link: `https://www.ryanair.com/it/it/trip/flights/select?adults=1&teens=0&children=0&infants=0&dateOut=${out.date}&dateIn=${retDate}&isConnectedFlight=false&isReturn=true&discount=0&promoCode=&originIata=${from}&destinationIata=${dest.code}&tpAdults=1&tpTeens=0&tpChildren=0&tpInfants=0&tpStartDate=${out.date}&tpEndDate=${retDate}&tpDiscount=0&tpPromoCode=&tpOriginIata=${from}&tpDestinationIata=${dest.code}`,
+            });
+          }
+        }
+      } catch(e) {
+        // rotta non disponibile, skippa
+      }
+    }
+    return results;
+  }
+
+  // ── Wizz Air timetable (gratuito, no SerpApi) ───────────────────────────
+  async function fetchWizzairCheapest(from, dest, months, selectedNights, budget) {
+    const results = [];
+    for (const month of months) {
+      try {
+        const res = await Promise.race([
+          fetch(`/api/wizzair?from=${from}&to=${dest.code}&month=${month}`),
+          new Promise((_,rej) => setTimeout(() => rej(new Error("timeout")), 12000))
+        ]);
+        if (!res.ok) continue;
+        const data = await res.json();
+        if (data.noRoute || !data.flights?.length) continue;
+
+        // Per ogni volo andata, cerca un ritorno compatibile con le notti selezionate
+        for (const outFlight of data.flights) {
+          if (!outFlight.price || outFlight.price > budget * 0.7) continue; // andata max 70% budget
+
+          for (const nights of selectedNights) {
+            const retDateObj = new Date(outFlight.depDate + "T12:00:00");
+            retDateObj.setDate(retDateObj.getDate() + nights);
+            const retDate = retDateObj.toISOString().split("T")[0];
+
+            // Cerca volo di ritorno nella stessa lista (stesso mese)
+            const retFlight = data.flights.find(f =>
+              f.depDate === retDate && f.price
+            );
+
+            // Se il ritorno non è nello stesso mese, stima con media
+            const retPrice = retFlight
+              ? retFlight.price
+              : Math.round(data.flights.reduce((s,f) => s + f.price, 0) / data.flights.length);
+
+            const totalPrice = outFlight.price + retPrice;
+            if (totalPrice > budget) continue;
+
+            results.push({
+              mode: "any",
+              source: "wizzair",
+              destination: dest.city, country: dest.country, flag: dest.flag,
+              destCode: dest.code, zone: dest.zone || "",
+              total_price: Math.round(totalPrice),
+              outPrice: outFlight.price,
+              retPrice: Math.round(retPrice),
+              hotel_nights_saved: 0,
+              depDate: outFlight.depDate,
+              retDate,
+              nights,
+              isCheapCombo: isCheapCombo(outFlight.depDate, retDate),
+              depTime: outFlight.depTime || "—",
+              arrTime: outFlight.arrTime || "—",
+              airline: "Wizz Air", stops: 0,
+              dur: outFlight.duration || "—",
+              flightH: null,
+              trip_link: buildTripLink(from, dest.code, outFlight.depDate, retDate),
+              google_link: buildGoogleLink(from, dest.code, outFlight.depDate, retDate),
+              wizzair_link: `https://www.wizzair.com/it-it/prenotazione/seleziona-volo/${from}/${dest.code}/${outFlight.depDate}/${retDate}/1/0/0`,
+            });
+          }
+        }
+      } catch(e) {
+        // rotta non disponibile
+      }
+    }
+    // Dedup per data — tieni solo il più economico per ogni combinazione dep+nights
+    const seen = {};
+    return results
+      .sort((a,b) => a.total_price - b.total_price)
+      .filter(r => {
+        const k = r.depDate + r.nights;
+        if (seen[k]) return false;
+        seen[k] = true;
+        return true;
+      });
+  }
+
+  // ── Aviasales Data API (Travelpayouts) — copre easyJet, Vueling, Transavia ─
+  async function fetchAviasalesCheapest(from, dest, months, selectedNights, budget) {
+    const results = [];
+    for (const month of months) {
+      try {
+        const res = await Promise.race([
+          fetch(`/api/aviasales?from=${from}&to=${dest.code}&month=${month}`),
+          new Promise((_,rej) => setTimeout(() => rej(new Error("timeout")), 10000))
+        ]);
+        if (!res.ok) continue;
+        const data = await res.json();
+        if (data.noData || !data.fares?.length) continue;
+
+        for (const fare of data.fares) {
+          if (!fare.price || !fare.depDate) continue;
+          if (fare.price > budget * 0.7) continue; // andata max 70% budget
+
+          for (const nights of selectedNights) {
+            // Calcola data ritorno
+            const retDateObj = new Date(fare.depDate + "T12:00:00");
+            retDateObj.setDate(retDateObj.getDate() + nights);
+            const retDate = retDateObj.toISOString().split("T")[0];
+
+            // Se Aviasales ha già il prezzo A/R, usalo
+            // Altrimenti stima ritorno uguale all'andata
+            let totalPrice = fare.price;
+            let isEstimated = true;
+            if (fare.retDate === retDate && fare.price) {
+              // Prezzo già A/R dalla cache
+              totalPrice = fare.price;
+              isEstimated = false;
+            } else {
+              // Stima: andata × 2 (conservativo)
+              totalPrice = Math.round(fare.price * 2);
+            }
+
+            if (totalPrice > budget) continue;
+
+            results.push({
+              mode: "any",
+              source: "aviasales",
+              destination: fare.destination || dest.city,
+              country: fare.country || dest.country,
+              flag: fare.flag || dest.flag || "✈",
+              destCode: dest.code, zone: dest.zone || "",
+              total_price: totalPrice,
+              isEstimated,
+              hotel_nights_saved: 0,
+              depDate: fare.depDate,
+              retDate,
+              nights,
+              isCheapCombo: isCheapCombo(fare.depDate, retDate),
+              depTime: "—", arrTime: "—",
+              airline: fare.airline || "—",
+              airlineCode: fare.airlineCode || "",
+              stops: 0, dur: "—", flightH: null,
+              trip_link: buildTripLink(from, dest.code, fare.depDate, retDate),
+              google_link: buildGoogleLink(from, dest.code, fare.depDate, retDate),
+              aviasales_link: fare.link || null,
+            });
+          }
+        }
+      } catch(e) {
+        // nessun dato disponibile
+      }
+    }
+
+    // Dedup per depDate+nights
+    const seen = {};
+    return results
+      .sort((a,b) => a.total_price - b.total_price)
+      .filter(r => {
+        const k = r.depDate + r.nights + r.airline;
+        if (seen[k]) return false;
+        seen[k] = true;
+        return true;
+      });
+  }
+
+  // ── Aviasales Special Offers — prezzi anomalmente bassi (offerte flash) ────
+  async function fetchSpecialOffers(from, budget) {
+    try {
+      const res = await Promise.race([
+        fetch(`/api/aviasales?from=${from}&mode=special`),
+        new Promise((_,rej) => setTimeout(() => rej(new Error("timeout")), 10000))
+      ]);
+      if (!res.ok) return [];
+      const data = await res.json();
+      if (data.noData || !data.offers?.length) return [];
+
+      return data.offers
+        .filter(o => o.price <= budget && o.depDate)
+        .map(o => ({
+          mode: "any",
+          source: "aviasales_flash",
+          isFlash: true,
+          destination: o.city || o.destCode,
+          country: o.country || "—",
+          flag: o.flag || "✈",
+          destCode: o.destCode,
+          zone: "",
+          total_price: o.price,
+          isEstimated: false,
+          hotel_nights_saved: 0,
+          depDate: o.depDate,
+          retDate: o.retDate || null,
+          nights: o.nights,
+          isCheapCombo: o.depDate && o.retDate ? isCheapCombo(o.depDate, o.retDate) : false,
+          depTime: "—", arrTime: "—",
+          airline: o.airline || "—",
+          airlineCode: o.airlineCode || "",
+          stops: o.stops || 0,
+          dur: "—", flightH: null,
+          trip_link: buildTripLink(from, o.destCode, o.depDate, o.retDate || addDays(5)),
+          google_link: buildGoogleLink(from, o.destCode, o.depDate, o.retDate || addDays(5)),
+          aviasales_link: o.link || null,
+        }));
+    } catch(e) {
+      return [];
+    }
+  }
+
+  // ── SerpApi (overnight e fallback) ────────────────────────────────────────
+  async function fetchSerpRoute(from, dest, depDate, retDate, mode) {
+    const p = new URLSearchParams({
+      departure_id: from, arrival_id: dest.code,
+      outbound_date: depDate, return_date: retDate,
+      currency: "EUR", hl: "it", type: "1",
+    });
+    // Fascia notturna 19:00-23:59 via API; 00:00-02:00 filtrato lato client
+    if (mode === "overnight" || mode === "one_overnight") p.set("outbound_times", "19,23");
+    if (mode === "overnight") p.set("return_times", "19,23");
+
+    const res = await Promise.race([
+      fetch("/api/search?" + p),
+      new Promise((_,rej) => setTimeout(() => rej(new Error("Timeout")), 20000))
+    ]);
+    if (!res.ok) {
+      const txt = await res.text().catch(()=>"");
+      let msg = "HTTP " + res.status;
+      try { msg = JSON.parse(txt).error || msg; } catch {}
+      throw new Error(dest.code + ": " + msg);
+    }
+    const data = await res.json();
+    if (data.error) throw new Error("API: " + data.error);
+    return data;
+  }
+
+  function mapSerpFlight(flight, from, dest, depDate, retDate, mode) {
+    const price = flight.price;
+    if (!price) return null;
+    const leg = flight.flights?.[0] || {};
+    const depTime = parseTime(leg.departure_airport?.time);
+    const arrTime = parseTime(leg.arrival_airport?.time);
+    const airline = leg.airline || "—";
+    const stops = flight.layovers?.length || 0;
+    const dur = flight.total_duration
+      ? `${Math.floor(flight.total_duration/60)}h ${flight.total_duration%60}m` : "—";
+    if ((mode === "overnight" || mode === "one_overnight") && !isEveningDep(leg.departure_airport?.time)) return null;
+    const hotelSaved = mode === "overnight" ? 2 : mode === "one_overnight" ? 1 : 0;
+    const nights = Math.round((new Date(retDate) - new Date(depDate)) / (1000*60*60*24));
+    return {
+      mode, source: "serp",
+      destination: dest.city, country: dest.country, flag: dest.flag,
+      zone: dest.zone || "", destCode: dest.code,
+      total_price: price, hotel_nights_saved: hotelSaved,
+      isCheapCombo: isCheapCombo(depDate, retDate),
+      depTime, arrTime, airline, stops, dur, depDate, retDate, nights,
+      flightH: dest.h || null,
+      trip_link: buildTripLink(from, dest.code, depDate, retDate),
+      google_link: buildGoogleLink(from, dest.code, depDate, retDate),
+    };
+  }
+
+  function pickDatesForNights(selectedNights, windowDays) {
+    const nights = selectedNights[Math.floor(Math.random() * selectedNights.length)];
+    const maxOffset = Math.max(3, windowDays - nights - 1);
+    const offset = Math.floor(Math.random() * maxOffset) + 2;
+    return { depDate: addDays(offset), retDate: addDays(offset + nights), nights };
+  }
+
+  // ── Discovery engine: Ryanair gratuito + SerpApi per overnight ────────────
+  async function runDiscovery(from, budget, selectedNights, windowDays, modes, onProgress) {
+    const results = [];
+    const months = currentMonths(windowDays);
+    let step = 0;
+    const totalSteps = modes.length;
+
+    for (const mode of modes) {
+      step++;
+      onProgress({t.btnSearching}, step, totalSteps);
+
+      if (mode === "any") {
+        // ── Modalità prezzo: usa Ryanair cheapestPerDay (0 call SerpApi) ──
+        onProgress("Ricerca in corso...", step, totalSteps);
+        const flashOffers = await fetchSpecialOffers(from, budget);
+        flashOffers.forEach(card => results.push(card));
+
+
+        const ryanairDests = (RYANAIR_ROUTES[from] || RYANAIR_ROUTES["FCO"])
+          .map(code => BUDGET_DESTINATIONS.find(d => d.code === code))
+          .filter(Boolean)
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 8); // max 8 rotte Ryanair
+
+        const ryanairResults = await Promise.allSettled(
+          ryanairDests.map(dest => fetchRyanairCheapest(from, dest, months, selectedNights, budget))
+        );
+        ryanairResults.forEach(r => {
+          if (r.status === "fulfilled") r.value.forEach(card => results.push(card));
+        });
+
+
+        const wizzDests = (WIZZAIR_ROUTES[from] || WIZZAIR_ROUTES["FCO"])
+          .map(code => {
+            // Cerca prima in BUDGET_DESTINATIONS, poi crea entry minimale
+            const known = BUDGET_DESTINATIONS.find(d => d.code === code);
+            return known || { code, city: code, country: "—", flag: "✈" };
+          })
+          .filter(d => !ryanairDests.find(r => r.code === d.code)) // no duplicati con Ryanair
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 6);
+
+        const wizzResults = await Promise.allSettled(
+          wizzDests.map(dest => fetchWizzairCheapest(from, dest, months, selectedNights, budget))
+        );
+        wizzResults.forEach(r => {
+          if (r.status === "fulfilled") r.value.forEach(card => results.push(card));
+        });
+
+
+        // Usa le stesse destinazioni già cercate + alcune extra non coperte da Ryanair/Wizz
+        const aviasalesDests = BUDGET_DESTINATIONS
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 6);
+
+        const aviasalesResults = await Promise.allSettled(
+          aviasalesDests.map(dest => fetchAviasalesCheapest(from, dest, months, selectedNights, budget))
+        );
+        aviasalesResults.forEach(r => {
+          if (r.status === "fulfilled") r.value.forEach(card => results.push(card));
+        });
+
+        // Fallback SerpApi solo per destinazioni senza nessuna copertura (1-2 call)
+        const coveredCodes = new Set([
+          ...ryanairDests.map(d => d.code),
+          ...wizzDests.map(d => d.code),
+          ...aviasalesDests.map(d => d.code),
+        ]);
+        const uncovered = BUDGET_DESTINATIONS
+          .filter(d => !coveredCodes.has(d.code))
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 3);
+
+        if (uncovered.length) {
+  
+          const serpResults = await Promise.allSettled(
+            uncovered.map(dest => {
+              const { depDate, retDate } = pickDatesForNights(selectedNights, windowDays);
+              return fetchSerpRoute(from, dest, depDate, retDate, "any")
+                .then(data => ({ data, dest, depDate, retDate }));
+            })
+          );
+          serpResults.forEach(r => {
+            if (r.status !== "fulfilled") return;
+            const { data, dest, depDate, retDate } = r.value;
+            [...(data.best_flights||[]), ...(data.other_flights||[])].slice(0,2).forEach(f => {
+              const card = mapSerpFlight(f, from, dest, depDate, retDate, "any");
+              if (card && card.total_price <= budget) results.push(card);
+            });
+          });
+        }
+
+      } else {
+        // ── Modalità overnight: usa SerpApi (5 call) ──
+        const pool = OVERNIGHT_DESTINATIONS[from] || OVERNIGHT_DESTINATIONS["FCO"];
+        const dests = [...pool].sort(() => Math.random() - 0.5).slice(0, 5);
+
+        for (let i = 0; i < dests.length; i += 3) {
+          const batch = dests.slice(i, i + 3);
+          const datePairs = batch.map(() => pickDatesForNights(selectedNights, windowDays));
+          const responses = await Promise.allSettled(
+            batch.map((dest, idx) => fetchSerpRoute(from, dest, datePairs[idx].depDate, datePairs[idx].retDate, mode))
+          );
+          let firstErr = null;
+          responses.forEach((r, idx) => {
+            if (r.status === "rejected") { if (!firstErr) firstErr = r.reason; return; }
+            const { depDate, retDate } = datePairs[idx];
+            [...(r.value.best_flights||[]), ...(r.value.other_flights||[])].slice(0,2).forEach(f => {
+              const card = mapSerpFlight(f, from, batch[idx], depDate, retDate, mode);
+              if (card && card.total_price <= budget) results.push(card);
+            });
+          });
+          if (firstErr && results.length === 0 && i === 0) throw firstErr;
+          if (i + 3 < dests.length) await new Promise(r => setTimeout(r, 400));
+        }
+      }
+    }
+
+    // Dedup per destCode+mode, ordina per prezzo
+    const seen = {};
+    return results
+      .filter(r => { const k = r.destCode+r.mode+r.depDate; if(seen[k]) return false; seen[k]=true; return true; })
+      .sort((a, b) => a.total_price - b.total_price)
+      .slice(0, 20); // max 20 risultati
+  }
+
+  // ── Hotellook: prezzi hotel per destinazione ─────────────────────────────
+  async function fetchHotelPrices(destCode, depDate, retDate) {
+    try {
+      const res = await Promise.race([
+        fetch(`/api/hotels?city=${destCode}&checkIn=${depDate}&checkOut=${retDate}`),
+        new Promise((_,rej) => setTimeout(() => rej(new Error("timeout")), 12000))
+      ]);
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (data.noData || !data.hotels?.length) return null;
+      return data;
+    } catch(e) { return null; }
+  }
+
+  function HotelBox({ destCode, depDate, retDate, flightPrice }) {
+    const [hotelData, setHotelData] = React.useState(null);
+    const [loading, setLoading] = React.useState(false);
+    const [loaded, setLoaded] = React.useState(false);
+
+    const load = async (e) => {
+      e.stopPropagation();
+      if (loaded || loading) return;
+      setLoading(true);
+      const data = await fetchHotelPrices(destCode, depDate, retDate);
+      setHotelData(data);
+      setLoading(false);
+      setLoaded(true);
+    };
+
+    const meta = hotelData?.meta;
+    const hotels = hotelData?.hotels || [];
+    const totalMin = meta ? flightPrice + meta.minTotal : null;
+    const totalAvg = meta ? flightPrice + meta.avgTotal : null;
+
+    return (
+      <div style={{ marginTop:14, borderTop:`1px solid ${C.border}`, paddingTop:14 }}
+        onClick={e => e.stopPropagation()}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:10 }}>
+          <div style={{ fontSize:13, fontWeight:700, color:C.gray1 }}>🏨 Alloggio</div>
+          {!loaded && (
+            <button onClick={load} disabled={loading} style={{
+              padding:"5px 12px", background: loading ? C.gray5 : "#0369a1",
+              color: loading ? C.gray4 : C.white, border:"none", borderRadius:8,
+              fontSize:12, fontWeight:700, cursor: loading ? "wait" : "pointer",
+              fontFamily:"'Manrope',sans-serif" }}>
+              {loading ? {t.loadingHotel} : {t.searchHotel}}
+            </button>
+          )}
+        </div>
+
+        {/* Step A: deep link immediati */}
+        {!loaded && !loading && (
+          <div style={{ display:"flex", gap:7, flexWrap:"wrap" }}>
+            {[
+              { label:"Hotellook ↗", href:`https://www.hotellook.com/hotels?destination=${destCode}&checkIn=${depDate}&checkOut=${retDate}&adults=1`, color:"#0369a1", bg:C.white, border:`1px solid ${C.border}` },
+              { label:"Booking.com ↗", href:`https://www.booking.com/search.html?ss=${destCode}&checkin=${depDate}&checkout=${retDate}&no_rooms=1&group_adults=1`, color:"#0369a1", bg:C.white, border:`1px solid ${C.border}` },
+              { label:"Ostelli ↗", href:`https://www.hostelworld.com/search?search_keywords=${destCode}&from-date=${depDate}&to-date=${retDate}`, color:"#166534", bg:"#f0fdf4", border:"1px solid #bbf7d0" },
+            ].map((btn,i) => (
+              <a key={i} href={btn.href} target="_blank" rel="noopener noreferrer"
+                style={{ fontSize:12, color:btn.color, textDecoration:"none", fontWeight:600,
+                  padding:"5px 10px", border:btn.border, borderRadius:7, background:btn.bg }}>
+                {btn.label}
+              </a>
+            ))}
+          </div>
+        )}
+
+        {/* Step B + C: prezzi reali + costo totale */}
+        {loaded && hotelData && (
+          <div>
+            <div style={{ background:"#f0f9ff", border:"1px solid #bae6fd",
+              borderRadius:10, padding:"11px 14px", marginBottom:11 }}>
+              <div style={{ fontSize:12, color:"#0369a1", fontWeight:700, marginBottom:6 }}>
+                💰 Costo totale stimato del viaggio
+              </div>
+              <div style={{ display:"flex", gap:24, flexWrap:"wrap" }}>
+                <div>
+                  <div style={{ fontSize:10, color:C.gray3 }}>con hotel economico</div>
+                  <div style={{ fontSize:22, fontWeight:800, color:C.orange,
+                    fontFamily:"'Manrope',sans-serif", lineHeight:1.1 }}>€{totalMin}</div>
+                  <div style={{ fontSize:10, color:C.gray4 }}>
+                    volo €{flightPrice} + hotel €{meta.minTotal} ({meta.nights}n × €{meta.minPricePerNight})
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize:10, color:C.gray3 }}>con hotel nella media</div>
+                  <div style={{ fontSize:22, fontWeight:800, color:C.gray2,
+                    fontFamily:"'Manrope',sans-serif", lineHeight:1.1 }}>~€{totalAvg}</div>
+                  <div style={{ fontSize:10, color:C.gray4 }}>~€{meta.avgPricePerNight}/notte</div>
+                </div>
+              </div>
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", gap:5, marginBottom:9 }}>
+              {hotels.map((h,i) => (
+                <a key={i} href={h.bookingUrl} target="_blank" rel="noopener noreferrer"
+                  style={{ display:"flex", justifyContent:"space-between", alignItems:"center",
+                    padding:"8px 11px", background:C.gray6, borderRadius:8,
+                    textDecoration:"none", border:`1px solid ${C.border}` }}>
+                  <div>
+                    <div style={{ fontSize:12, fontWeight:600, color:C.gray1 }}>
+                      {h.name}
+                      {h.stars > 0 && <span style={{ fontSize:10, color:"#f59e0b", marginLeft:4 }}>
+                        {"★".repeat(Math.min(h.stars,5))}
+                      </span>}
+                    </div>
+                    {h.rating && <div style={{ fontSize:10, color:C.gray3 }}>Ospiti: {h.rating}/10</div>}
+                  </div>
+                  <div style={{ textAlign:"right" }}>
+                    <div style={{ fontSize:15, fontWeight:800, color:"#15803d",
+                      fontFamily:"'Manrope',sans-serif" }}>€{h.pricePerNight}</div>
+                    <div style={{ fontSize:9, color:C.gray4 }}>a notte</div>
+                  </div>
+                </a>
+              ))}
+            </div>
+            <div style={{ display:"flex", gap:7, flexWrap:"wrap" }}>
+              <a href={`https://www.hotellook.com/hotels?destination=${destCode}&checkIn=${depDate}&checkOut=${retDate}&adults=1`}
+                target="_blank" rel="noopener noreferrer"
+                style={{ fontSize:12, color:"#0369a1", textDecoration:"none", fontWeight:600,
+                  padding:"5px 10px", border:`1px solid ${C.border}`, borderRadius:7 }}>
+                Tutti su Hotellook ↗
+              </a>
+              <a href={`https://www.hostelworld.com/search?search_keywords=${destCode}&from-date=${depDate}&to-date=${retDate}`}
+                target="_blank" rel="noopener noreferrer"
+                style={{ fontSize:12, color:"#166534", textDecoration:"none", fontWeight:600,
+                  padding:"5px 10px", border:"1px solid #bbf7d0", borderRadius:7,
+                  background:"#f0fdf4" }}>
+                Ostelli da €5/notte ↗
+              </a>
+            </div>
+          </div>
+        )}
+
+        {loaded && !hotelData && (
+          <div style={{ fontSize:12, color:C.gray3, padding:"6px 0", lineHeight:1.6 }}>
+            Dati non disponibili — cerca direttamente:&nbsp;
+            <a href={`https://www.booking.com/search.html?ss=${destCode}&checkin=${depDate}&checkout=${retDate}`}
+              target="_blank" rel="noopener noreferrer"
+              style={{ color:"#0369a1", fontWeight:600 }}>Booking.com ↗</a>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── UI ────────────────────────────────────────────────────────────────────
+
+  const C = {
+    orange:"#e85d00", orangeL:"#fff3ec",
+    purple:"#6d28d9", purpleL:"#f3f0ff",
+    blue:"#0369a1",   blueL:"#e0f2fe",
+    green:"#15803d",  greenL:"#dcfce7",
+    gray1:"#1a1a1a",  gray2:"#444",  gray3:"#777",
+    gray4:"#aaa",     gray5:"#e5e5e5", gray6:"#f5f5f0",
+    white:"#ffffff",  border:"#e0e0d8",
+  };
+
+  function Label({ children }) {
+    return <div style={{ fontSize:11, fontWeight:700, letterSpacing:"0.08em",
+      textTransform:"uppercase", color:C.gray3, marginBottom:6 }}>{children}</div>;
+  }
+
+  function Badge({ color, bg, children }) {
+    return <span style={{ display:"inline-block", padding:"2px 10px",
+      borderRadius:20, fontSize:12, fontWeight:700,
+      background:bg||C.gray5, color:color||C.gray2 }}>{children}</span>;
+  }
+
+  // Pill selezionabile per le notti
+  function NightPill({ n, selected, onToggle }) {
+    return (
+      <button onClick={() => onToggle(n)} style={{
+        padding:"6px 14px", borderRadius:20, border:`1.5px solid ${selected ? C.orange : C.border}`,
+        background: selected ? C.orangeL : C.white,
+        color: selected ? C.orange : C.gray3,
+        fontWeight:700, fontSize:14, cursor:"pointer",
+        transition:"all 0.15s",
+      }}>
+        {n}n
+      </button>
+    );
+  }
+
+  function FlightCard({ r, index }) {
+    const [open, setOpen] = useState(false);
+    const mode = MODES.find(m => m.id === r.mode) || MODES[2];
+    const hotelEst = r.hotel_nights_saved * 80;
+
+    return (
+      <div onClick={() => setOpen(!open)} style={{
+        background:C.white, border:`1.5px solid ${open ? C.orange : C.border}`,
+        borderRadius:16, overflow:"hidden",
+        boxShadow: open ? "0 4px 20px rgba(232,93,0,.1)" : "0 1px 4px rgba(0,0,0,.05)",
+        cursor:"pointer", transition:"all 0.2s",
+        animation:`slideUp 0.3s ease ${index*0.06}s both`,
+        marginBottom:12,
+      }}>
+        <div style={{ height:4, background:
+          r.mode==="overnight" ? C.purple : r.mode==="one_overnight" ? C.blue : C.orange }} />
+
+        <div style={{ padding:"18px 20px" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:12 }}>
+            <div style={{ flex:1 }}>
+              {/* Destinazione */}
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:5 }}>
+                <span style={{ fontSize:22 }}>{r.flag}</span>
+                <div>
+                  <div style={{ fontSize:21, fontWeight:800, fontFamily:"'Manrope',sans-serif",
+                    color:C.gray1, lineHeight:1.1 }}>{r.destination}</div>
+                  <div style={{ fontSize:12, color:C.gray3 }}>{r.country}{r.zone ? ` · ${r.zone}` : ""}</div>
+                </div>
+              </div>
+              {/* Riepilogo */}
+              <div style={{ fontSize:13, color:C.gray2, marginBottom:9, fontWeight:500 }}>
+                {r.outbound_detail || `${r.depTime} → ${r.arrTime} · ${r.airline}`}
+              </div>
+              {/* Badges */}
+              <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                <Badge color={mode.badgeColor} bg={mode.badgeColor+"15"}>{mode.emoji} {mode.badge}</Badge>
+                <Badge color={C.gray2} bg={C.gray5}>{r.stops===0?"✈ Diretto":`${r.stops} scalo`}</Badge>
+                <Badge color={C.gray2} bg={C.gray5}>⏱ {r.dur}</Badge>
+                <Badge color={C.gray2} bg={C.gray5}>🌙 {r.nights} notti</Badge>
+                {/* Stopover benefit badge */}
+                {r.destCode && (() => {
+                  const hubs = getProgramsByHub(r.destCode);
+                  if (!hubs.length) return null;
+                  const best = [...hubs].sort((a,b)=>b.estimatedValueEur.economy-a.estimatedValueEur.economy)[0];
+                  return <Badge color="#166534" bg="#dcfce7">🏨 Stopover {best.airline}</Badge>;
+                })()}
+              </div>
+            </div>
+
+            {/* Prezzo */}
+            <div style={{ textAlign:"right", flexShrink:0 }}>
+              <div style={{ fontSize:36, fontWeight:800, fontFamily:"'Manrope',sans-serif",
+                color:C.orange, lineHeight:1 }}>€{r.total_price}</div>
+              <div style={{ fontSize:11, color:C.gray4, marginTop:2 }}>volo A/R</div>
+              {r.hotel_nights_saved > 0 && (
+                <div style={{ marginTop:6, fontSize:11, fontWeight:700, color:C.green,
+                  background:C.greenL, padding:"3px 8px", borderRadius:8 }}>
+                  🏨 +{r.hotel_nights_saved} notti gratis
+                </div>
+              )}
+              <div style={{ marginTop:6, display:"flex", gap:6, justifyContent:"flex-end", flexWrap:"wrap" }}>
+                {r.source === "ryanair" && (
+                  <span style={{ fontSize:10, fontWeight:700, padding:"2px 7px", borderRadius:10,
+                    background:"#fff0f0", color:"#c0392b" }}>✈ Ryanair</span>
+                )}
+                {r.source === "wizzair" && (
+                  <span style={{ fontSize:10, fontWeight:700, padding:"2px 7px", borderRadius:10,
+                    background:"#fff0f6", color:"#9b1d6e" }}>✈ Wizz Air</span>
+                )}
+                {r.source === "aviasales" && (
+                  <span style={{ fontSize:10, fontWeight:700, padding:"2px 7px", borderRadius:10,
+                    background:"#e0f2fe", color:"#0369a1" }}>
+                    ✈ {r.airline || "Aviasales"}{r.isEstimated ? " ~" : ""}
+                  </span>
+                )}
+                {r.source === "aviasales_flash" && (
+                  <span style={{ fontSize:10, fontWeight:700, padding:"2px 7px", borderRadius:10,
+                    background:"#fef9c3", color:"#854d0e" }}>
+                    🔥 offerta flash · {r.airline}
+                  </span>
+                )}
+                {r.isCheapCombo && (
+                  <span style={{ fontSize:10, fontWeight:700, padding:"2px 7px", borderRadius:10,
+                    background:"#fffbe6", color:"#7d5a00" }}>📅 gio/mar combo</span>
+                )}
+                {!open && (
+                  <span style={{ fontSize:11, color:C.gray4 }}>▼ dettagli</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {open && (
+            <div onClick={e=>e.stopPropagation()} style={{ marginTop:14, paddingTop:14,
+              borderTop:`1px solid ${C.border}` }}>
+              {/* Date grid */}
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:14 }}>
+                <div style={{ background:C.gray6, borderRadius:10, padding:"11px 14px" }}>
+                  <div style={{ fontSize:10, color:C.gray3, fontWeight:700, textTransform:"uppercase",
+                    letterSpacing:"0.06em", marginBottom:3 }}>Partenza</div>
+                  <div style={{ fontSize:13, fontWeight:600, color:C.gray1 }}>{fmtDate(r.depDate)}</div>
+                  {r.depTime !== "—" && (
+                    <div style={{ fontSize:15, fontWeight:800, color:C.orange, marginTop:2 }}>
+                      {r.depTime} → {r.arrTime}
+                    </div>
+                  )}
+                  <div style={{ fontSize:11, color:C.gray3, marginTop:2 }}>{r.airline}</div>
+                  {r.outPrice && (
+                    <div style={{ fontSize:12, fontWeight:700, color:C.orange, marginTop:3 }}>
+                      andata: €{r.outPrice}
+                    </div>
+                  )}
+                </div>
+                <div style={{ background:C.gray6, borderRadius:10, padding:"11px 14px" }}>
+                  <div style={{ fontSize:10, color:C.gray3, fontWeight:700, textTransform:"uppercase",
+                    letterSpacing:"0.06em", marginBottom:3 }}>Ritorno</div>
+                  <div style={{ fontSize:13, fontWeight:600, color:C.gray1 }}>{fmtDate(r.retDate)}</div>
+                  <div style={{ fontSize:11, color:C.gray3, marginTop:4 }}>{r.nights} notti</div>
+                  {r.flightH && <div style={{ fontSize:11, color:C.gray3 }}>Volo ~{r.flightH}h</div>}
+                  {r.retPrice && (
+                    <div style={{ fontSize:12, fontWeight:700, color:C.orange, marginTop:3 }}>
+                      ritorno: €{r.retPrice}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Visa-free badge in expanded */}
+              {r.destCode && (() => {
+                const vfOpts = findTransitOptions("IT", r.destCode);
+                if (!vfOpts.length) return null;
+                return (
+                  <div style={{ background:"#f0fdf4", border:"1px solid #bbf7d0",
+                    borderRadius:8, padding:"8px 12px", marginBottom:10 }}>
+                    <div style={{ fontSize:12, fontWeight:700, color:"#166534" }}>
+                      🛂 Transito visa-free disponibile a {r.destination}
+                    </div>
+                    <div style={{ fontSize:11, color:"#166534", marginTop:2 }}>
+                      {vfOpts[0].policy?.policyName || vfOpts[0].policyName} · max {vfOpts[0].policy?.maxHours||vfOpts[0].maxHours}h
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Flash offer box */}
+              {r.isFlash && (
+                <div style={{ background:"#fefce8", border:"1.5px solid #fde047",
+                  borderRadius:10, padding:"11px 14px", marginBottom:12 }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:"#854d0e", marginBottom:3 }}>
+                    🔥 Offerta anomala rilevata
+                  </div>
+                  <div style={{ fontSize:12, color:"#713f12", lineHeight:1.6 }}>
+                    Questo prezzo è anomalmente basso rispetto alla media storica per questa rotta.
+                    Le offerte flash durano ore — verifica disponibilità subito.
+                  </div>
+                  {r.isEstimated === false && (
+                    <div style={{ fontSize:11, color:"#854d0e", marginTop:4, fontWeight:600 }}>
+                      ✓ Prezzo verificato da cache Aviasales (ultimi 7 giorni)
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Saving box */}
+              {r.hotel_nights_saved > 0 && (
+                <div style={{ background:C.greenL, border:`1px solid #bbf7d0`,
+                  borderRadius:10, padding:"11px 14px", marginBottom:12 }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:C.green, marginBottom:2 }}>
+                    💡 Risparmio stimato totale: ~€{r.total_price + hotelEst}
+                  </div>
+                  <div style={{ fontSize:12, color:"#166534" }}>
+                    Volo €{r.total_price} + ~€{hotelEst} risparmiate in hotel ({r.hotel_nights_saved} notti)
+                  </div>
+                </div>
+              )}
+
+              {/* Hotel section — passi A, B, C */}
+              {r.depDate && r.retDate && (
+                <HotelBox
+                  destCode={r.destCode}
+                  depDate={r.depDate}
+                  retDate={r.retDate}
+                  flightPrice={r.total_price}
+                />
+              )}
+
+              {/* CTA */}
+              <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+                {r.source === "ryanair" && r.ryanair_link && (
+                  <a href={r.ryanair_link} target="_blank" rel="noopener noreferrer"
+                    style={{ flex:1, minWidth:130, display:"block", textAlign:"center",
+                      padding:"13px 16px", background:"#c0392b", color:C.white,
+                      borderRadius:11, fontWeight:800, fontSize:13, textDecoration:"none",
+                      fontFamily:"'Manrope',sans-serif" }}>
+                    Prenota Ryanair →
+                  </a>
+                )}
+                {r.source === "wizzair" && r.wizzair_link && (
+                  <a href={r.wizzair_link} target="_blank" rel="noopener noreferrer"
+                    style={{ flex:1, minWidth:130, display:"block", textAlign:"center",
+                      padding:"13px 16px", background:"#9b1d6e", color:C.white,
+                      borderRadius:11, fontWeight:800, fontSize:13, textDecoration:"none",
+                      fontFamily:"'Manrope',sans-serif" }}>
+                    Prenota Wizz →
+                  </a>
+                )}
+                {(r.source === "aviasales" || r.source === "aviasales_flash") && r.aviasales_link && (
+                  <a href={r.aviasales_link} target="_blank" rel="noopener noreferrer"
+                    style={{ flex:1, minWidth:130, display:"block", textAlign:"center",
+                      padding:"13px 16px",
+                      background: r.source === "aviasales_flash" ? "#854d0e" : "#0369a1",
+                      color:C.white, borderRadius:11, fontWeight:800, fontSize:13,
+                      textDecoration:"none", fontFamily:"'Manrope',sans-serif" }}>
+                    {r.source === "aviasales_flash" ? "🔥 Vedi offerta flash →" : "Cerca su Aviasales →"}
+                  </a>
+                )}
+                <a href={r.trip_link} target="_blank" rel="noopener noreferrer"
+                  style={{ flex:1, minWidth:130, display:"block", textAlign:"center",
+                    padding:"13px 16px", background:C.orange, color:C.white,
+                    borderRadius:11, fontWeight:800, fontSize:13, textDecoration:"none",
+                    fontFamily:"'Manrope',sans-serif",
+                    boxShadow:"0 2px 8px rgba(232,93,0,.2)" }}>
+                  {r.source === "ryanair" ? "Confronta Trip.com" : "Prenota Trip.com →"}
+                </a>
+                <a href={r.google_link} target="_blank" rel="noopener noreferrer"
+                  style={{ padding:"13px 14px", background:C.white, color:C.gray2,
+                    border:`1.5px solid ${C.border}`, borderRadius:11,
+                    fontWeight:600, fontSize:12, textDecoration:"none" }}>
+                  Google ↗
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── App ───────────────────────────────────────────────────────────────────
+
+  // ── C: Colors (needed in new components) ─────────────────────────────────
+  // C is defined later in App — define constants here for components
+  const CC = {
+    orange:"#e85d00", orangeL:"#fff3ec",
+    green:"#15803d",  greenL:"#dcfce7",
+    blue:"#0369a1",   blueL:"#e0f2fe",
+    purple:"#6d28d9", purpleL:"#f3f0ff",
+    gray1:"#1a1a1a",  gray2:"#444",  gray3:"#777",
+    gray4:"#aaa",     gray5:"#e5e5e5", gray6:"#f5f5f0",
+    white:"#ffffff",  border:"#e0e0d8",
+    amber:"#92400e",  amberL:"#fffbeb",
+  };
+
+  // ── Bot detection + client fingerprint ──────────────────────────────────
+  // Rileva bot elementari: nessun mouse movement, submit istantaneo, ecc.
+  const _botSignals = { mouseCount: 0, keyCount: 0, startTime: Date.now() };
+  if (typeof window !== "undefined") {
+    document.addEventListener("mousemove", () => { _botSignals.mouseCount++; }, { passive: true });
+    document.addEventListener("keydown",   () => { _botSignals.keyCount++;   }, { passive: true });
+  }
+  function isSuspiciousBot() {
+    const elapsed = Date.now() - _botSignals.startTime;
+    // Meno di 2 secondi sulla pagina + nessun movimento mouse = sospetto
+    if (elapsed < 2000 && _botSignals.mouseCount === 0 && _botSignals.keyCount === 0) return true;
+    // Meno di 500ms = impossibile per un umano
+    if (elapsed < 500) return true;
+    return false;
+  }
+
+
+  // ── i18n — Italiano / Հայերեն (Armenian) ────────────────────────────────
+  const TRANSLATIONS = {
+    it: {
+      lang:        "IT",
+      flag:        "🇮🇹",
+      appTagline:  "Scopri dove puoi andare",
+      tabFlights:  "✈ Voli",
+      tabStopover: "🏨 Stopover",
+      tabVisafree: "🛂 Senza Visto",
+      explorerOn:  "Explorer ON",
+      explorerOff: "Explorer",
+      formTitle:   {t.formTitle},
+      labelFrom:   {t.labelFrom},
+      labelBudget: {t.labelBudget},
+      labelNights: {t.labelNights},
+      labelWhen:   {t.labelWhen},
+      labelMode:   {t.labelMode},
+      btnSearch:   {t.btnSearch},
+      btnSearching:"Ricerca in corso...",
+      resultsFound:n => `${n} opportunità trovate`,
+      sortedBy:    {t.sortedBy},
+      nights:      n => `${n} notti`,
+      flightAR:    "volo A/R",
+      hotelFree:   n => `🏨 +${n} notti gratis`,
+      stopoverAvail:"Programmi Stopover",
+      stopoverDesc: n => `${n} compagnie offrono benefit durante lo scalo`,
+      visafreeTitle:"Vola Senza Visto",
+      visafreeDesc: "Trova dove puoi fare scalo senza visto. Perfetto per famiglie con passaporti diversi.",
+      familyMode:  "👨‍👩‍👧 Famiglia",
+      singleMode:  "👤 Singolo",
+      yourNat:     "La tua nazionalità",
+      familyNats:  "Nazionalità della famiglia",
+      addMember:   "+ Aggiungi membro famiglia",
+      filterApt:   "Filtra per aeroporto (opzionale)",
+      commonDests: n => `✅ ${n} destinazioni dove TUTTI possono transitare senza visto`,
+      passports:   "Passaporti:",
+      noCommon:    "Nessuna destinazione comune trovata per questi passaporti.",
+      hotelSection:{t.hotelSection},
+      searchHotel: "Cerca prezzi hotel",
+      loadingHotel:"Carico...",
+      totalCost:   {t.totalCost},
+      cheapHotel:  {t.cheapHotel},
+      avgHotel:    {t.avgHotel},
+      perNight:    "a notte",
+      flashAlert:  "🔥 Offerta anomala rilevata",
+      flashDesc:   "Prezzo anomalmente basso. Verifica disponibilità subito.",
+      disclaimer:  "⚠️ Informazioni sui visti indicative. Verifica sempre requisiti ufficiali prima di viaggiare.",
+      loading1:    {t.loading1},
+      loading2:    {t.loading2},
+      loading3:    {t.loading3},
+      loading4:    {t.loading4},
+      noResults:   {t.noResults},
+    },
+    hy: {
+      lang:        "ՀՅ",
+      flag:        "🇦🇲",
+      appTagline:  "Բացահայտի՛ր ուր կարող ես գնալ",
+      tabFlights:  "✈ Թռիչքներ",
+      tabStopover: "🏨 Կանգ",
+      tabVisafree: "🛂 Անվիզա",
+      explorerOn:  "Explorer ΛΝ",
+      explorerOff: "Explorer",
+      formTitle:   "Ո՞ւր կարող ես գնալ?",
+      labelFrom:   "Մեկնում է",
+      labelBudget: "Թռիչքի առավ. բյուջե",
+      labelNights: "Ճամփորդության տևողությունը",
+      labelWhen:   "Երբ",
+      labelMode:   "Խնայողության ռազմավարություն",
+      btnSearch:   "🔍 Գտի՛ր լավագույն առաջարկները",
+      btnSearching:"Որոնում...",
+      resultsFound:n => `${n} հնարավորություն`,
+      sortedBy:    "դասավորված ըստ գնի",
+      nights:      n => `${n} գիշեր`,
+      flightAR:    "թռիչք այ/վեր",
+      hotelFree:   n => `🏨 +${n} անվճար գիշեր`,
+      stopoverAvail:"Կանգի ծրագրեր",
+      stopoverDesc: n => `${n} ավիաընկերություն կանգի ժամանակ արտոնություններ են տալիս`,
+      visafreeTitle:"Թռի՛ր առանց վիզայի",
+      visafreeDesc: "Գտի՛ր որտեղ կարող ես անցնել առանց վիզայի: Հատկապես հարմար է խառը անձնագրերով ընտանիքների համար։",
+      familyMode:  "👨‍👩‍👧 Ընտանիք",
+      singleMode:  "👤 Անհատ",
+      yourNat:     "Քո քաղաքացիությունը",
+      familyNats:  "Ընտանիքի քաղաքացիությունները",
+      addMember:   "+ Ավելացնել ընտանիքի անդամ",
+      filterApt:   "Ֆիլտրել օդանավակայանի կողմից (ըndamén)",
+      commonDests: n => `✅ ${n} ուղղություն, որտեղ ԲՈԼՈՐԸ կարող են մուտք գործել անվիզա`,
+      passports:   "Անձնագրեր:",
+      noCommon:    "Ընդհանուր ուղղություններ չկան այս անձնագրերի համար։",
+      hotelSection:"🏨 Կացարան",
+      searchHotel: "Որոնել հյուրանոցի գներ",
+      loadingHotel:"Բեռնում...",
+      totalCost:   "💰 Ճամփորդության ընդհանուր գնահատված արժեք",
+      cheapHotel:  "ամենաէժան հյուրանոցով",
+      avgHotel:    "միջին հյուրանոցով",
+      perNight:    "մեկ գիշերվա",
+      flashAlert:  "🔥 Արտ. ցածր գին",
+      flashDesc:   "Անոմալ ցածր գին: Ստուգի՛ր անմիջապես:",
+      disclaimer:  "⚠️ Վիզայի տվյալները տեղեկատվական են: Ճամփոր. դիմաց ստուգի՛ր պաշտոնական կայքերում:",
+      loading1:    "Երթուղիների վերլուծություն...",
+      loading2:    "Գների համեմատություն...",
+      loading3:    "Առաջարկների որոնում...",
+      loading4:    "Գրեթե պատրաստ...",
+      noResults:   "Թռիչքներ չեն գտնվել: Ավելացրե՛ք բյուջեն կամ ժամկետը:",
+    },
+  };
+
+  // Language hook
+  function useLang() {
+    const [lang, setLang] = React.useState(() =>
+      localStorage.getItem("topaia_lang") || "it"
+    );
+    const t = TRANSLATIONS[lang] || TRANSLATIONS.it;
+    const toggleLang = () => {
+      const next = lang === "it" ? "hy" : "it";
+      localStorage.setItem("topaia_lang", next);
+      setLang(next);
+    };
+    return { lang, t, toggleLang };
+  }
+
+
+  // ── STOPOVER VIEW ─────────────────────────────────────────────────────────
+  function StopoverView({ explorerMode, t = TRANSLATIONS.it }) {
+    const [search, setSearch] = useState("");
+    const [filterTier, setFilterTier] = useState(0);
+    const [expandedId, setExpandedId] = useState(null);
+
+    const filtered = useMemo(() => {
+      return STOPOVER_PROGRAMS.filter(p => {
+        if (!p.active) return false;
+        if (filterTier && p.tier !== filterTier) return false;
+        if (search) {
+          const s = search.toLowerCase();
+          return p.airline.toLowerCase().includes(s) ||
+            p.hub.toLowerCase().includes(s) ||
+            p.country.toLowerCase().includes(s);
+        }
+        return true;
+      }).sort((a,b) => {
+        const sa = calculateStopoverScore(a, {cabin:"economy"});
+        const sb = calculateStopoverScore(b, {cabin:"economy"});
+        return sb.score - sa.score;
+      });
+    }, [search, filterTier]);
+
+    const tierColors = { 1:{ bg:"#dcfce7", txt:"#166534", label:"Hotel incluso" },
+                         2:{ bg:"#fef3c7", txt:"#78350f", label:"Hotel scontato" },
+                         3:{ bg:"#e0f2fe", txt:"#0369a1", label:"Routing gratuito" } };
+
+    return (
+      <div style={{ maxWidth:680, margin:"0 auto", padding:"18px 14px 60px" }}>
+        <div style={{ marginBottom:16 }}>
+          <div style={{ fontSize:20, fontWeight:800, fontFamily:"'Manrope',sans-serif",
+            color:CC.gray1, marginBottom:4 }}>{t?.stopoverAvail || "Programmi Stopover"}</div>
+          <div style={{ fontSize:13, color:CC.gray3, lineHeight:1.6 }}>
+            {t?.stopoverDesc ? t.stopoverDesc(STOPOVER_PROGRAMS.filter(p=>p.active).length) : `${STOPOVER_PROGRAMS.filter(p=>p.active).length} compagnie offrono benefit durante lo scalo.`}
+          </div>
+        </div>
+
+        {/* Filtri */}
+        <div style={{ display:"flex", gap:8, marginBottom:14, flexWrap:"wrap" }}>
+          <input value={search} onChange={e=>setSearch(e.target.value)}
+            placeholder="Cerca compagnia o città..."
+            style={{ flex:1, minWidth:160, padding:"8px 12px", border:`1.5px solid ${CC.border}`,
+              borderRadius:9, fontSize:13, fontFamily:"'Inter',sans-serif", outline:"none" }} />
+          {[0,1,2,3].map(t => (
+            <button key={t} onClick={()=>setFilterTier(t)}
+              style={{ padding:"7px 12px", borderRadius:9, border:`1.5px solid ${filterTier===t ? CC.orange : CC.border}`,
+                background: filterTier===t ? CC.orangeL : CC.white,
+                color: filterTier===t ? CC.orange : CC.gray2,
+                fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"'Inter',sans-serif" }}>
+              {t===0 ? "Tutti" : t===1 ? "🏨 Hotel gratis" : t===2 ? "💰 Scontato" : "✈ Routing"}
+            </button>
+          ))}
+        </div>
+
+        {/* Cards */}
+        {filtered.map(program => {
+          const score = calculateStopoverScore(program, {cabin:"economy"});
+          const tc = tierColors[program.tier];
+          const isExp = expandedId === program.id;
+          return (
+            <div key={program.id} onClick={()=>setExpandedId(isExp?null:program.id)}
+              style={{ background:CC.white, border:`1.5px solid ${isExp?CC.orange:CC.border}`,
+                borderRadius:14, marginBottom:10, overflow:"hidden", cursor:"pointer",
+                boxShadow: isExp?"0 3px 16px rgba(232,93,0,.1)":"0 1px 3px rgba(0,0,0,.05)" }}>
+              <div style={{ height:4, background: program.tier===1?"#15803d":program.tier===2?"#f59e0b":"#0369a1" }} />
+              <div style={{ padding:"16px 18px" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:5 }}>
+                      <span style={{ fontSize:16, fontWeight:800, fontFamily:"'Manrope',sans-serif",
+                        color:CC.gray1 }}>{program.airline}</span>
+                      <span style={{ padding:"2px 8px", borderRadius:20, fontSize:11, fontWeight:700,
+                        background:tc.bg, color:tc.txt }}>{tc.label}</span>
+                    </div>
+                    <div style={{ fontSize:13, color:CC.gray2, marginBottom:6 }}>
+                      🌍 {program.hub} ({(Array.isArray(program.hubIata)?program.hubIata:[program.hubIata]).join(", ")}) · {program.country}
+                    </div>
+                    <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                      <span style={{ fontSize:11, padding:"2px 7px", borderRadius:8,
+                        background:CC.gray6, color:CC.gray2 }}>
+                        ⏱ {program.minLayoverHours}h min · {program.maxNights}n max
+                      </span>
+                      {program.hotelIncluded && (
+                        <span style={{ fontSize:11, padding:"2px 7px", borderRadius:8,
+                          background:"#dcfce7", color:"#166534" }}>🏨 Hotel incluso</span>
+                      )}
+                      {program.alliance && program.alliance !== "None" && program.alliance !== "None (30+ bilateral)" && (
+                        <span style={{ fontSize:11, padding:"2px 7px", borderRadius:8,
+                          background:CC.blueL, color:CC.blue }}>{program.alliance}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div style={{ textAlign:"right", paddingLeft:10, flexShrink:0 }}>
+                    <div style={{ fontSize:11, color:CC.gray3, marginBottom:2 }}>valore stimato</div>
+                    <div style={{ fontSize:22, fontWeight:800, color:CC.green,
+                      fontFamily:"'Manrope',sans-serif" }}>
+                      €{program.estimatedValueEur.economy}
+                    </div>
+                    <div style={{ fontSize:10, color:CC.gray4 }}>economy</div>
+                    {/* Score bar */}
+                    <div style={{ marginTop:6, display:"flex", alignItems:"center", gap:4 }}>
+                      <div style={{ width:60, height:4, borderRadius:4, background:CC.gray5, overflow:"hidden" }}>
+                        <div style={{ height:"100%", borderRadius:4, background:CC.orange,
+                          width:`${score.score}%` }} />
+                      </div>
+                      <span style={{ fontSize:10, color:CC.gray3 }}>{score.score}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Expanded */}
+                {isExp && (
+                  <div onClick={e=>e.stopPropagation()}
+                    style={{ marginTop:14, paddingTop:14, borderTop:`1px solid ${CC.border}` }}>
+                    {program.hotelDetails && (
+                      <div style={{ background:CC.greenL, border:"1px solid #bbf7d0",
+                        borderRadius:9, padding:"10px 13px", marginBottom:10 }}>
+                        <div style={{ fontSize:12, fontWeight:700, color:"#166534", marginBottom:3 }}>
+                          🏨 {program.hotelDetails}
+                        </div>
+                      </div>
+                    )}
+                    {program.additionalPerks?.length > 0 && (
+                      <div style={{ marginBottom:10 }}>
+                        <div style={{ fontSize:11, color:CC.gray3, fontWeight:700,
+                          textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:4 }}>
+                          Perks inclusi
+                        </div>
+                        {program.additionalPerks.map((p,i) => (
+                          <div key={i} style={{ fontSize:13, color:CC.gray2, padding:"2px 0" }}>✓ {p}</div>
+                        ))}
+                      </div>
+                    )}
+                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:12 }}>
+                      {[
+                        ["Eleggibilità", program.eligibility],
+                        ["Come prenotare", program.bookingMethod || "Vedi sito compagnia"],
+                        ["Info visto", program.visaInfo || "Verifica sito ambasciata"],
+                        ["Verificato il", program.lastVerified],
+                      ].map(([k,v],i) => v && (
+                        <div key={i} style={{ background:CC.gray6, borderRadius:8, padding:"8px 10px" }}>
+                          <div style={{ fontSize:10, color:CC.gray3, fontWeight:700,
+                            textTransform:"uppercase", letterSpacing:"0.05em" }}>{k}</div>
+                          <div style={{ fontSize:12, color:CC.gray1, marginTop:2, lineHeight:1.4 }}>{v}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <a href={program.bookingUrl} target="_blank" rel="noopener noreferrer"
+                      style={{ display:"inline-block", padding:"9px 16px", background:CC.orange,
+                        color:CC.white, borderRadius:9, fontSize:13, fontWeight:800,
+                        textDecoration:"none", fontFamily:"'Manrope',sans-serif" }}>
+                      Prenota Stopover →
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // ── VISA FREE VIEW ────────────────────────────────────────────────────────
+  function VisaFreeView({ explorerMode, t = TRANSLATIONS.it }) {
+    const [mode, setMode] = useState("family"); // "single" | "family"
+    const [singleNat, setSingleNat] = useState("AM");
+    const [familyNats, setFamilyNats] = useState(["IT","AM"]);
+    const [filterAirport, setFilterAirport] = useState("");
+    const [expandedId, setExpandedId] = useState(null);
+
+    const addNat = () => {
+      if (familyNats.length < 5) setFamilyNats([...familyNats, "US"]);
+    };
+    const updateNat = (i, val) => {
+      const n = [...familyNats]; n[i]=val; setFamilyNats(n);
+    };
+    const removeNat = i => setFamilyNats(familyNats.filter((_,idx)=>idx!==i));
+
+    const results = useMemo(() => {
+      const ap = filterAirport || null;
+      if (mode === "family") return findFamilyTransitOptions(familyNats, ap);
+      return { commonOptions: findTransitOptions(singleNat, ap), perNationality: {} };
+    }, [mode, singleNat, familyNats, filterAirport]);
+
+    const certColor = c => c==="confirmed" || c==="CONFERMATO"
+      ? {bg:"#dcfce7",txt:"#166534"}
+      : {bg:"#fef3c7",txt:"#78350f"};
+    const certLabel = c => c==="confirmed"||c==="CONFERMATO" ? "✓ Confermato" : "⚠ Verificare";
+
+    const allCountryCodes = Object.entries(NATIONALITY_GROUPS)
+      .flatMap(([g,d]) => d.countries.map(c=>({code:c,group:g,groupLabel:d.label})));
+
+    const NatSelector = ({val, onChange, label}) => (
+      <div style={{ flex:1 }}>
+        {label && <div style={{ fontSize:10, color:CC.gray3, fontWeight:700,
+          textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:4 }}>{label}</div>}
+        <select value={val} onChange={e=>onChange(e.target.value)}
+          style={{ width:"100%", padding:"8px 10px", border:`1.5px solid ${CC.border}`,
+            borderRadius:8, fontSize:13, fontFamily:"'Inter',sans-serif", background:CC.white }}>
+          {Object.entries(NATIONALITY_GROUPS).map(([gid,gdata]) => (
+            <optgroup key={gid} label={gdata.label}>
+              {gdata.countries.map(c => (
+                <option key={c} value={c}>{COUNTRY_NAMES[c]||c} ({c})</option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+      </div>
+    );
+
+    return (
+      <div style={{ maxWidth:680, margin:"0 auto", padding:"18px 14px 60px" }}>
+        <div style={{ marginBottom:16 }}>
+          <div style={{ fontSize:20, fontWeight:800, fontFamily:"'Manrope',sans-serif",
+            color:CC.gray1, marginBottom:4 }}>{t?.visafreeTitle || "Vola Senza Visto"}</div>
+          <div style={{ fontSize:13, color:CC.gray3, lineHeight:1.6 }}>
+            {t?.visafreeDesc || "Trova dove puoi fare scalo senza visto."}
+          </div>
+        </div>
+
+        {/* Mode selector */}
+        <div style={{ background:CC.white, border:`1px solid ${CC.border}`,
+          borderRadius:14, padding:20, marginBottom:16,
+          boxShadow:"0 1px 4px rgba(0,0,0,.05)" }}>
+
+          <div style={{ display:"flex", gap:8, marginBottom:16 }}>
+            {[{id:"family",label:t.familyMode||"👨‍👩‍👧 Famiglia"},{id:"single",label:t.singleMode||"👤 Singolo"}].map(m=>(
+              <button key={m.id} onClick={()=>setMode(m.id)}
+                style={{ flex:1, padding:"9px", border:`1.5px solid ${mode===m.id?CC.orange:CC.border}`,
+                  borderRadius:9, background:mode===m.id?CC.orangeL:CC.white,
+                  color:mode===m.id?CC.orange:CC.gray2,
+                  fontSize:13, fontWeight:700, cursor:"pointer" }}>
+                {m.label}
+              </button>
+            ))}
+          </div>
+
+          {mode === "single" ? (
+            <NatSelector val={singleNat} onChange={setSingleNat} label="La tua nazionalità" />
+          ) : (
+            <div>
+              <div style={{ fontSize:11, color:CC.gray3, fontWeight:700,
+                textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:8 }}>
+                Nazionalità della famiglia
+              </div>
+              <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                {familyNats.map((nat,i) => (
+                  <div key={i} style={{ display:"flex", gap:8, alignItems:"center" }}>
+                    <NatSelector val={nat} onChange={v=>updateNat(i,v)} label={null} />
+                    {familyNats.length > 1 && (
+                      <button onClick={()=>removeNat(i)}
+                        style={{ padding:"8px 10px", border:`1px solid ${CC.border}`, borderRadius:8,
+                          background:CC.white, color:CC.gray3, cursor:"pointer", fontSize:16 }}>×</button>
+                    )}
+                  </div>
+                ))}
+                {familyNats.length < 5 && (
+                  <button onClick={addNat}
+                    style={{ padding:"8px", border:`1.5px dashed ${CC.border}`, borderRadius:8,
+                      background:"transparent", color:CC.gray3, cursor:"pointer", fontSize:13 }}>
+                    {t.addMember || "+ Aggiungi membro famiglia"}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          <div style={{ marginTop:12 }}>
+            <div style={{ fontSize:11, color:CC.gray3, fontWeight:700,
+              textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:5 }}>
+              Filtra per aeroporto (opzionale)
+            </div>
+            <input value={filterAirport} onChange={e=>setFilterAirport(e.target.value.toUpperCase())}
+              placeholder="Es. SIN, IST, DXB..."
+              maxLength={3}
+              style={{ width:"100%", padding:"8px 12px", border:`1.5px solid ${CC.border}`,
+                borderRadius:8, fontSize:13, fontFamily:"'Inter',sans-serif", outline:"none" }} />
+          </div>
+        </div>
+
+        {/* Family summary */}
+        {mode === "family" && results.commonOptions?.length > 0 && (
+          <div style={{ background:"#f0f9ff", border:"1px solid #bae6fd",
+            borderRadius:12, padding:"12px 15px", marginBottom:14 }}>
+            <div style={{ fontSize:13, fontWeight:700, color:CC.blue, marginBottom:4 }}>
+              {t?.commonDests ? t.commonDests(results.commonOptions.length) : `✅ ${results.commonOptions.length} destinazioni comuni`}
+            </div>
+            <div style={{ fontSize:12, color:"#0c4a6e" }}>
+              {t?.passports || "Passaporti:"} {familyNats.map(n=>COUNTRY_NAMES[n]||n).join(" + ")}
+            </div>
+          </div>
+        )}
+
+        {/* Results */}
+        {(results.commonOptions||[]).length === 0 && (
+          <div style={{ background:CC.gray6, border:`1px solid ${CC.border}`,
+            borderRadius:12, padding:"20px", textAlign:"center", color:CC.gray3, fontSize:13 }}>
+            Nessuna destinazione comune trovata per questi passaporti.
+            {mode==="family" && " Prova a verificare le opzioni individuali qui sotto."}
+          </div>
+        )}
+
+        {(results.commonOptions||[]).map(item => {
+          const policy = item;
+          const cert = item.certainty || "confirmed";
+          const cc = certColor(cert);
+          const isExp = expandedId === policy.id;
+          return (
+            <div key={policy.id} onClick={()=>setExpandedId(isExp?null:policy.id)}
+              style={{ background:CC.white, border:`1.5px solid ${isExp?CC.blue:CC.border}`,
+                borderRadius:14, marginBottom:10, overflow:"hidden", cursor:"pointer",
+                boxShadow:isExp?"0 3px 16px rgba(3,105,161,.1)":"0 1px 3px rgba(0,0,0,.05)" }}>
+              <div style={{ height:4, background: policy.costEur===0?"#15803d":"#f59e0b" }} />
+              <div style={{ padding:"15px 17px" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+                  <div style={{ flex:1 }}>
+                    <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:5, flexWrap:"wrap" }}>
+                      <span style={{ fontSize:16, fontWeight:800, fontFamily:"'Manrope',sans-serif",
+                        color:CC.gray1 }}>{policy.country}</span>
+                      <span style={{ fontSize:12, color:CC.gray3 }}>{policy.city}</span>
+                      <span style={{ padding:"2px 7px", borderRadius:20, fontSize:11, fontWeight:700,
+                        background:cc.bg, color:cc.txt }}>{certLabel(cert)}</span>
+                    </div>
+                    <div style={{ fontSize:13, fontWeight:600, color:CC.gray2, marginBottom:5 }}>
+                      {policy.policyName}
+                    </div>
+                    <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                      <span style={{ fontSize:11, padding:"2px 7px", borderRadius:8,
+                        background: policy.costEur===0?"#dcfce7":"#fef3c7",
+                        color: policy.costEur===0?"#166534":"#78350f" }}>
+                        {policy.costEur===0 ? "✓ Gratuito" : `€${policy.costEur}`}
+                      </span>
+                      <span style={{ fontSize:11, padding:"2px 7px", borderRadius:8,
+                        background:CC.gray6, color:CC.gray2 }}>
+                        ⏱ {policy.maxHours}h max
+                      </span>
+                      {policy.airportIata.map(a=>(
+                        <span key={a} style={{ fontSize:11, padding:"2px 7px", borderRadius:8,
+                          background:CC.blueL, color:CC.blue }}>{a}</span>
+                      ))}
+                      {policy.familyFriendly && (
+                        <span style={{ fontSize:11, padding:"2px 7px", borderRadius:8,
+                          background:"#fdf4ff", color:"#7e22ce" }}>👨‍👩‍👧 Family friendly</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {isExp && (
+                  <div onClick={e=>e.stopPropagation()}
+                    style={{ marginTop:12, paddingTop:12, borderTop:`1px solid ${CC.border}` }}>
+                    {/* Conditions */}
+                    <div style={{ marginBottom:10 }}>
+                      <div style={{ fontSize:11, color:CC.gray3, fontWeight:700,
+                        textTransform:"uppercase", letterSpacing:"0.06em", marginBottom:5 }}>
+                        Condizioni
+                      </div>
+                      {policy.conditions?.map((c,i)=>(
+                        <div key={i} style={{ fontSize:12, color:CC.gray2, padding:"2px 0" }}>• {c}</div>
+                      ))}
+                    </div>
+                    {policy.additionalRequirements && (
+                      <div style={{ background:"#fef3c7", border:"1px solid #fde68a",
+                        borderRadius:8, padding:"9px 12px", marginBottom:10 }}>
+                        <div style={{ fontSize:12, fontWeight:700, color:"#78350f" }}>
+                          ⚠ Requisiti aggiuntivi
+                        </div>
+                        <div style={{ fontSize:12, color:"#78350f", marginTop:2 }}>
+                          {policy.additionalRequirements}
+                        </div>
+                      </div>
+                    )}
+                    {policy.topaiaTip && (
+                      <div style={{ background:CC.orangeL, border:`1px solid #fed7aa`,
+                        borderRadius:8, padding:"9px 12px", marginBottom:10 }}>
+                        <div style={{ fontSize:12, fontWeight:700, color:CC.orange }}>
+                          💡 Topaia tip
+                        </div>
+                        <div style={{ fontSize:12, color:CC.orange, marginTop:2 }}>
+                          {policy.topaiaTip}
+                        </div>
+                      </div>
+                    )}
+                    <div style={{ display:"flex", justifyContent:"space-between",
+                      alignItems:"center", fontSize:11, color:CC.gray4 }}>
+                      <span>Verificato: {policy.lastVerified}</span>
+                      <a href={policy.source} target="_blank" rel="noopener noreferrer"
+                        style={{ color:CC.blue, fontWeight:600, textDecoration:"none" }}>
+                        Fonte ufficiale ↗
+                      </a>
+                    </div>
+                    {/* Disclaimer */}
+                    <div style={{ marginTop:10, padding:"8px 10px",
+                      background:CC.gray6, borderRadius:7, fontSize:11, color:CC.gray3, lineHeight:1.5 }}>
+                      ⚠️ Informazioni indicative. Verifica sempre i requisiti ufficiali
+                      prima di viaggiare. Topaia.travel non è responsabile per dinieghi di ingresso.
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Per-nationality breakdown (family mode) */}
+        {mode==="family" && (results.perNationality||[]).length>0 && (
+          <div style={{ marginTop:20 }}>
+            <div style={{ fontSize:14, fontWeight:700, color:CC.gray1, marginBottom:10 }}>
+              Opzioni individuali per passaporto
+            </div>
+            {(results.perNationality||[]).map(natEntry=>{
+              const nat = natEntry.nationality;
+              const opts = natEntry.options || [];
+              return (
+                <div key={nat} style={{ marginBottom:12 }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:CC.gray2, marginBottom:6,
+                    padding:"6px 10px", background:CC.gray6, borderRadius:8 }}>
+                    🛂 {COUNTRY_NAMES[nat]||nat} — {opts.length} opzioni
+                  </div>
+                  {opts.slice(0,3).map(item=>{
+                    const p = item;
+                    return (
+                      <div key={p.id} style={{ padding:"8px 12px", marginBottom:5,
+                        background:CC.white, border:`1px solid ${CC.border}`, borderRadius:9,
+                        display:"flex", justifyContent:"space-between" }}>
+                        <span style={{ fontSize:13, color:CC.gray1 }}>{p.country} · {p.policyName}</span>
+                        <span style={{ fontSize:12, color:p.costEur===0?"#166534":"#78350f", fontWeight:600 }}>
+                          {p.costEur===0?"Gratis":`€${p.costEur}`} · {p.maxHours}h
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Legal disclaimer footer */}
+        <div style={{ marginTop:20, padding:"14px 16px", background:"#fffbeb",
+          border:"1px solid #fde68a", borderRadius:12,
+          fontSize:12, color:"#78350f", lineHeight:1.7 }}>
+          {t?.disclaimer || '⚠️ Informazioni sui visti indicative. Verifica sempre requisiti ufficiali prima di viaggiare.'}
+        </div>
+      </div>
+    );
+  }
+
+
+  // ── Tier system — Free / Registrato / Premium ────────────────────────────
+  // Token formato MVP: base64(tier:userId) — sostituire con JWT in produzione
+  const TIER_CONFIG = {
+    free:       { label:"Free",    daily:1,  color:"#6b7280", bg:"#f3f4f6" },
+    registered: { label:"Account", daily:3,  color:"#0369a1", bg:"#e0f2fe" },
+    premium:    { label:"Premium", daily:30, color:"#7c3aed", bg:"#f3f0ff" },
+  };
+
+  function getUserTier() {
+    try {
+      const token = localStorage.getItem("topaia_token");
+      if (!token) return { tier:"free", token:"" };
+      const decoded = atob(token);
+      const [tier] = decoded.split(":");
+      if (!TIER_CONFIG[tier]) return { tier:"free", token:"" };
+      return { tier, token };
+    } catch { return { tier:"free", token:"" }; }
+  }
+
+  // ── DealsWidget — Offerte rilevate dal sistema ogni 12h ──────────────────
+  function DealsWidget({ onSelectAirport }) {
+    const [data, setData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+      fetch("/api/deals")
+        .then(r => r.json())
+        .then(d => { setData(d); setLoading(false); })
+        .catch(() => setLoading(false));
+    }, []);
+
+    if (loading) return (
+      <div style={{ padding:"16px 20px", textAlign:"center",
+        fontSize:12, color:C.gray3 }}>
+        Caricamento offerte in corso...
+      </div>
+    );
+
+    if (!data || data.isFallback || !data.deals?.length) return null;
+
+    const ageH = data.ageHours || 0;
+    const ageLabel = ageH < 1 ? "< 1 ora fa"
+      : ageH === 1 ? "1 ora fa"
+      : `${ageH} ore fa`;
+
+    return (
+      <div style={{ maxWidth:680, margin:"0 auto", padding:"0 14px 4px" }}>
+        {/* Header */}
+        <div style={{ display:"flex", justifyContent:"space-between",
+          alignItems:"center", marginBottom:10 }}>
+          <div>
+            <span style={{ fontSize:14, fontWeight:800,
+              fontFamily:"'Manrope',sans-serif", color:C.gray1 }}>
+              🔥 Offerte rilevate ora
+            </span>
+            <span style={{ fontSize:11, color:C.gray4, marginLeft:8 }}>
+              dal sistema · aggiornato {ageLabel}
+            </span>
+          </div>
+          {data.isStale && (
+            <span style={{ fontSize:10, color:"#92400e", padding:"2px 7px",
+              background:"#fef3c7", borderRadius:8 }}>
+              ⏳ in aggiornamento...
+            </span>
+          )}
+        </div>
+
+        {/* Cards a scorrimento orizzontale */}
+        <div style={{ display:"flex", gap:10, overflowX:"auto",
+          paddingBottom:8, scrollbarWidth:"none", msOverflowStyle:"none" }}>
+          {data.deals.map((deal, i) => (
+            <div key={i}
+              onClick={() => onSelectAirport && onSelectAirport(deal.from)}
+              style={{
+                flexShrink:0, width:160, background:C.white,
+                border:`1.5px solid ${deal.isFlash ? "#fde047" : C.border}`,
+                borderRadius:14, padding:"12px 14px", cursor:"pointer",
+                boxShadow: deal.isFlash
+                  ? "0 2px 12px rgba(253,224,71,.3)"
+                  : "0 1px 4px rgba(0,0,0,.06)",
+                transition:"transform 0.15s",
+              }}
+              onMouseEnter={e => e.currentTarget.style.transform="translateY(-2px)"}
+              onMouseLeave={e => e.currentTarget.style.transform="translateY(0)"}
+            >
+              {/* Fonte badge */}
+              <div style={{ display:"flex", justifyContent:"space-between",
+                alignItems:"center", marginBottom:6 }}>
+                <span style={{ fontSize:9, fontWeight:700, padding:"1px 6px",
+                  borderRadius:8,
+                  background: deal.isFlash ? "#fef9c3" : "#f0f0f0",
+                  color: deal.isFlash ? "#854d0e" : C.gray3 }}>
+                  {deal.isFlash ? "🔥 FLASH" : "✈ " + deal.airline}
+                </span>
+                <span style={{ fontSize:16 }}>{deal.flag}</span>
+              </div>
+
+              {/* Destinazione */}
+              <div style={{ fontSize:15, fontWeight:800,
+                fontFamily:"'Manrope',sans-serif", color:C.gray1,
+                lineHeight:1.1, marginBottom:2 }}>
+                {deal.city}
+              </div>
+              <div style={{ fontSize:10, color:C.gray3, marginBottom:8 }}>
+                da {deal.fromName || deal.from}
+              </div>
+
+              {/* Prezzo */}
+              <div style={{ fontSize:22, fontWeight:800,
+                fontFamily:"'Manrope',sans-serif",
+                color: deal.isFlash ? "#854d0e" : C.orange,
+                lineHeight:1 }}>
+                €{deal.price}
+              </div>
+              <div style={{ fontSize:9, color:C.gray4, marginTop:1 }}>
+                {deal.depDate
+                  ? new Date(deal.depDate + "T12:00:00").toLocaleDateString("it-IT",
+                      {day:"numeric", month:"short"})
+                  : "prossimi mesi"
+                }
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+
+  function TierBadge({ tier, remainingDay, dailyLimit }) {
+    const cfg = TIER_CONFIG[tier] || TIER_CONFIG.free;
+    return (
+      <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+        <span style={{ padding:"2px 9px", borderRadius:20, fontSize:11, fontWeight:700,
+          background:cfg.bg, color:cfg.color }}>
+          {cfg.label}
+        </span>
+        {remainingDay !== undefined && (
+          <span style={{ fontSize:11, color: remainingDay === 0 ? "#b91c1c" : "#6b7280" }}>
+            {remainingDay}/{dailyLimit} ricerche oggi
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  // Modal upgrade — mostrato quando si supera il limite
+  function UpgradeModal({ reason, tier, onClose }) {
+    const isRegistered = tier === "registered";
+    return (
+      <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.5)",
+        zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center",
+        padding:20 }} onClick={onClose}>
+        <div style={{ background:"#fff", borderRadius:20, padding:28, maxWidth:380, width:"100%",
+          boxShadow:"0 20px 60px rgba(0,0,0,.2)" }} onClick={e=>e.stopPropagation()}>
+          <div style={{ fontSize:28, textAlign:"center", marginBottom:12 }}>
+            {isRegistered ? "⭐" : "🚀"}
+          </div>
+          <div style={{ fontSize:18, fontWeight:800, fontFamily:"'Manrope',sans-serif",
+            color:"#1a1a1a", textAlign:"center", marginBottom:8 }}>
+            {isRegistered ? "Passa a Premium" : "Registrazione gratuita"}
+          </div>
+          <div style={{ fontSize:13, color:"#666", textAlign:"center", lineHeight:1.6, marginBottom:20 }}>
+            {isRegistered
+              ? "Con Premium hai 30 ricerche al giorno per tutto l'anno."
+              : "Crea un account gratuito e ottieni 3 ricerche al giorno invece di 1."}
+          </div>
+
+          <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:20 }}>
+            {!isRegistered && (
+              <div style={{ display:"flex", gap:10, padding:"12px 14px",
+                background:"#e0f2fe", borderRadius:12, alignItems:"flex-start" }}>
+                <span style={{ fontSize:20 }}>🆓</span>
+                <div>
+                  <div style={{ fontWeight:700, color:"#0369a1", fontSize:14 }}>Account gratuito</div>
+                  <div style={{ fontSize:12, color:"#0c4a6e" }}>3 ricerche/giorno · Stopover · Senza Visto · Sempre gratis</div>
+                </div>
+              </div>
+            )}
+            <div style={{ display:"flex", gap:10, padding:"12px 14px",
+              background:"#f3f0ff", borderRadius:12, alignItems:"flex-start",
+              border:"2px solid #7c3aed" }}>
+              <span style={{ fontSize:20 }}>⭐</span>
+              <div style={{ flex:1 }}>
+                <div style={{ fontWeight:700, color:"#7c3aed", fontSize:14 }}>
+                  Premium — €5/anno
+                </div>
+                <div style={{ fontSize:12, color:"#4c1d95", lineHeight:1.5 }}>
+                  30 ricerche/giorno · Notifiche offerte flash ·
+                  Supporta lo sviluppo di Topaia
+                </div>
+              </div>
+              <div style={{ fontSize:18, fontWeight:800, color:"#7c3aed",
+                fontFamily:"'Manrope',sans-serif", whiteSpace:"nowrap" }}>
+                €5
+                <div style={{ fontSize:10, fontWeight:400, color:"#7c3aed" }}>/ anno</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Demo: simula upgrade senza vero backend per ora */}
+          {!isRegistered && (
+            <button onClick={() => {
+              // Demo: crea token registrato
+              const token = btoa("registered:demo_" + Date.now());
+              localStorage.setItem("topaia_token", token);
+              onClose(true);
+            }} style={{ width:"100%", padding:"13px", marginBottom:8,
+              background:"#0369a1", color:"#fff", border:"none", borderRadius:11,
+              fontWeight:800, fontSize:14, cursor:"pointer", fontFamily:"'Manrope',sans-serif" }}>
+              Crea account gratuito (demo)
+            </button>
+          )}
+          <button onClick={() => {
+            // Demo: simula premium (in produzione: redirect a Stripe/LemonSqueezy)
+            const token = btoa("premium:demo_" + Date.now());
+            localStorage.setItem("topaia_token", token);
+            onClose(true);
+          }} style={{ width:"100%", padding:"13px", marginBottom:8,
+            background:"#7c3aed", color:"#fff", border:"none", borderRadius:11,
+            fontWeight:800, fontSize:14, cursor:"pointer", fontFamily:"'Manrope',sans-serif" }}>
+            Prova Premium — €5/anno →
+          </button>
+          <button onClick={() => onClose(false)}
+            style={{ width:"100%", padding:"10px", background:"transparent",
+              color:"#9ca3af", border:"none", fontSize:13, cursor:"pointer" }}>
+            Continua senza upgrade
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+
+  function App() {
+    const { lang, t, toggleLang } = useLang();
+    const [from, setFrom] = useState("FCO");
+    const [budget, setBudget] = useState(500);
+    const [selectedNights, setSelectedNights] = useState([4, 5, 7]);
+    const [window_, setWindow] = useState(WINDOWS[1]);
+    const [modes, setModes] = useState(["overnight"]);
+    const [activeTab, setActiveTab] = useState("search");
+    const [explorerMode, setExplorerMode] = useState(false);
+    const [nationalities, setNationalities] = useState(["IT"]);
+    const [results, setResults] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [loadMsg, setLoadMsg] = useState("");
+    const [loadStep, setLoadStep] = useState(0);
+    const [loadTotal, setLoadTotal] = useState(1);
+    const [error, setError] = useState(null);
+
+    const toggleMode = id =>
+      setModes(p => p.includes(id) ? p.filter(m=>m!==id) : [...p, id]);
+    const toggleNight = n =>
+      setSelectedNights(p => p.includes(n) ? (p.length>1 ? p.filter(x=>x!==n) : p) : [...p, n].sort((a,b)=>a-b));
+
+    // Stima call SerpApi: overnight=5/mode, "any"=3 (Ryanair gratis + 3 fallback)
+    const callEst = modes.reduce((sum, m) => sum + (m === "any" ? 3 : 5), 0);
+    const ryanairActive = modes.includes("any");
+    const destCount = modes.some(m => m==="overnight"||m==="one_overnight")
+      ? (OVERNIGHT_DESTINATIONS[from]||[]).length : BUDGET_DESTINATIONS.length;
+
+    const [rateInfo, setRateInfo] = useState(null);
+    const [showUpgrade, setShowUpgrade] = useState(false);
+    const [userTierInfo] = useState(() => getUserTier()); // { tier, token }
+    const tierCfg = TIER_CONFIG[userTierInfo.tier] || TIER_CONFIG.free;
+
+    const search = async () => {
+      if (!modes.length || !selectedNights.length) return;
+      setLoading(true); setResults(null); setError(null);
+
+      // ── Bot detection (client-side) ─────────────────────────────────────
+      if (isSuspiciousBot()) {
+        setError("Rilevato comportamento anomalo. Attendi un momento e riprova.");
+        setLoading(false);
+        return;
+      }
+
+      // ── Rate limit check ────────────────────────────────────────────────
+      try {
+        const rlRes = await fetch("/api/rate-check", {
+          method: "POST",
+          headers: { "X-User-Token": userTierInfo.token || "" },
+        });
+        const rl = await rlRes.json();
+        if (!rl.allowed) {
+          setLoading(false);
+          if (rl.reason === "daily" || rl.reason === "hourly") {
+            setShowUpgrade(true); // mostra modal upgrade
+          } else {
+            setError("⏳ " + (rl.message || "Troppe ricerche. Riprova più tardi."));
+          }
+          return;
+        }
+        setRateInfo({
+          remainingHour: rl.remainingHour,
+          remainingDay: rl.remainingDay,
+          dailyLimit: rl.dailyLimit,
+          tier: rl.tier,
+        });
+      } catch(e) {
+        // Se il check fallisce per errore di rete, permettiamo la ricerca
+        // (fail open: meglio una ricerca in più che bloccare utenti legittimi)
+        console.warn("Rate check failed:", e.message);
+      }
+
+      // ── Ricerca voli ────────────────────────────────────────────────────
+      try {
+        const found = await runDiscovery(
+          from, budget, selectedNights, window_.days, modes,
+          (msg, step, total) => { setLoadMsg(msg); setLoadStep(step); setLoadTotal(total); }
+        );
+        if (!found.length) {
+          setError(t.noResults);
+        } else {
+          setResults(found);
+        }
+      } catch(e) {
+        setError("Errore: " + e.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const inputStyle = {
+      width:"100%", background:C.white, border:`1.5px solid ${C.border}`,
+      borderRadius:10, color:C.gray1, padding:"11px 14px",
+      fontSize:15, fontFamily:"'Inter',sans-serif", fontWeight:500,
+    };
+
+    return (
+      <div style={{ minHeight:"100vh", background:C.gray6 }}>
+
+        {/* Upgrade modal */}
+        {showUpgrade && (
+          <UpgradeModal
+            tier={userTierInfo.tier}
+            reason="daily"
+            onClose={(upgraded) => {
+              setShowUpgrade(false);
+              if (upgraded) window.location.reload(); // ricarica per applicare nuovo tier
+            }}
+          />
+        )}
+
+        {/* Header + Tab Navigation */}
+        <div style={{ background:C.white, borderBottom:`1px solid ${C.border}` }}>
+          <div style={{ padding:"12px 16px 0", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <span style={{ fontSize:22 }}>🐭</span>
+              <div>
+                <div style={{ fontFamily:"'Manrope',sans-serif", fontSize:17, fontWeight:800, color:C.gray1 }}>
+                  topaia<span style={{ color:C.orange }}>.travel</span>
+                </div>
+                <div style={{ fontSize:10, color:C.gray3 }}>{t.appTagline}</div>
+              </div>
+            </div>
+            <div style={{ display:"flex", gap:6, alignItems:"center", flexWrap:"wrap" }}>
+              {/* Tier badge */}
+              <TierBadge tier={userTierInfo.tier}
+                remainingDay={rateInfo?.remainingDay}
+                dailyLimit={rateInfo?.dailyLimit} />
+              {/* Language toggle */}
+              <div onClick={toggleLang}
+                style={{ display:"flex", alignItems:"center", gap:4, cursor:"pointer",
+                  padding:"4px 9px", borderRadius:20,
+                  background: C.gray6, border:`1px solid ${C.border}` }}>
+                <span style={{ fontSize:13 }}>{t.flag}</span>
+                <span style={{ fontSize:11, fontWeight:700, color:C.gray2 }}>{t.lang}</span>
+              </div>
+              {/* Explorer toggle */}
+              <div onClick={() => setExplorerMode(m => !m)} style={{
+                display:"flex", alignItems:"center", gap:5, cursor:"pointer",
+                padding:"4px 10px", borderRadius:20,
+                background: explorerMode ? C.orangeL : C.gray6,
+                border:`1px solid ${explorerMode ? C.orange : C.border}`,
+                transition:"all 0.2s"
+              }}>
+                <span style={{ fontSize:13 }}>{explorerMode ? "🧭" : "🔍"}</span>
+                <span style={{ fontSize:11, fontWeight:700, color: explorerMode ? C.orange : C.gray3 }}>
+                  {explorerMode ? t.explorerOn : t.explorerOff}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div style={{ display:"flex", gap:0, padding:"0 8px", overflowX:"auto" }}>
+            {[
+              { id:"search",   label: t.tabFlights  },
+              { id:"stopover", label: t.tabStopover },
+              { id:"visafree", label: t.tabVisafree },
+            ].map(tab => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
+                padding:"10px 14px", border:"none", background:"transparent",
+                fontSize:13, fontWeight: activeTab===tab.id ? 700 : 500,
+                color: activeTab===tab.id ? C.orange : C.gray3,
+                borderBottom:`2px solid ${activeTab===tab.id ? C.orange : "transparent"}`,
+                cursor:"pointer", whiteSpace:"nowrap", transition:"all 0.15s",
+                fontFamily:"'Inter',sans-serif"
+              }}>
+                {tab.icon} {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Tab routing */}
+        {activeTab === "stopover" && <StopoverView explorerMode={explorerMode} t={t} />}
+        {activeTab === "visafree" && <VisaFreeView explorerMode={explorerMode} t={t} />}
+
+        {activeTab === "search" && (
+        <div style={{ maxWidth:680, margin:"0 auto", padding:"18px 14px 60px" }}>
+
+          {/* Offerte vetrina — dal cron ogni 12h */}
+          <div style={{ background:C.white, borderRadius:16, marginBottom:14,
+            boxShadow:"0 1px 4px rgba(0,0,0,.05)", overflow:"hidden",
+            border:`1px solid ${C.border}`, paddingTop:14 }}>
+            <DealsWidget onSelectAirport={(code) => {
+              setFrom(code);
+              setTimeout(() => window.scrollTo({top:0, behavior:"smooth"}), 100);
+            }} />
+          </div>
+
+          {/* Form */}
+          <div style={{ background:C.white, border:`1px solid ${C.border}`,
+            borderRadius:20, padding:22, marginBottom:16,
+            boxShadow:"0 2px 10px rgba(0,0,0,.05)" }}>
+
+            <div style={{ fontSize:17, fontWeight:800, fontFamily:"'Manrope',sans-serif",
+              color:C.gray1, marginBottom:18 }}>Dove puoi andare?</div>
+
+            {/* Riga 1: aeroporto + budget */}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
+              <div>
+                <Label>Parti da</Label>
+                <select value={from} onChange={e=>setFrom(e.target.value)} style={inputStyle}>
+                  {AIRPORTS.map(a=><option key={a.code} value={a.code}>{a.code} — {lang==="hy" && a.city_hy ? a.city_hy : a.city}</option>)}
+                </select>
+              </div>
+              <div>
+                <Label>Budget max volo A/R — <span style={{color:C.orange,fontWeight:800}}>€{budget}</span></Label>
+                <input type="range" min={100} max={2000} step={50} value={budget}
+                  onChange={e=>setBudget(Number(e.target.value))}
+                  style={{ width:"100%", accentColor:C.orange, marginTop:10 }} />
+                <div style={{ display:"flex", justifyContent:"space-between",
+                  fontSize:11, color:C.gray4, marginTop:3 }}>
+                  <span>€100</span><span>€2000</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Notti — multi-select pill */}
+            <div style={{ marginBottom:14 }}>
+              <Label>Durata del viaggio (scegli una o più)</Label>
+              <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginTop:4 }}>
+                {NIGHT_OPTIONS.map(n => (
+                  <NightPill key={n} n={n} selected={selectedNights.includes(n)} onToggle={toggleNight} />
+                ))}
+              </div>
+              <div style={{ fontSize:12, color:C.gray3, marginTop:6 }}>
+                {selectedNights.length === 1
+                  ? `Selezionate: ${selectedNights[0]} notti`
+                  : `Selezionate: ${selectedNights.join(", ")} notti — ogni destinazione riceverà una durata casuale tra quelle scelte`
+                }
+              </div>
+            </div>
+
+            {/* Finestra */}
+            <div style={{ marginBottom:18 }}>
+              <Label>Quando</Label>
+              <select value={window_.label}
+                onChange={e=>setWindow(WINDOWS.find(w=>w.label===e.target.value))} style={inputStyle}>
+                {WINDOWS.map(w=><option key={w.label}>{w.label}</option>)}
+              </select>
+            </div>
+
+            {/* Strategia */}
+            <div style={{ marginBottom:16 }}>
+              <Label>Strategia di risparmio</Label>
+              <div style={{ display:"flex", flexDirection:"column", gap:7 }}>
+                {MODES.map(m => {
+                  const active = modes.includes(m.id);
+                  return (
+                    <div key={m.id} onClick={()=>toggleMode(m.id)} style={{
+                      display:"flex", alignItems:"center", gap:12, padding:"12px 14px",
+                      background: active ? m.badgeColor+"0d" : C.gray6,
+                      border:`1.5px solid ${active ? m.badgeColor : C.border}`,
+                      borderRadius:12, cursor:"pointer", transition:"all 0.15s",
+                    }}>
+                      <span style={{ fontSize:20 }}>{m.emoji}</span>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:14, fontWeight:700, color:active?C.gray1:C.gray2, marginBottom:2 }}>
+                          {m.label}
+                        </div>
+                        <div style={{ fontSize:12, color:C.gray3 }}>{m.desc}</div>
+                      </div>
+                      <div style={{ width:20, height:20, borderRadius:5, flexShrink:0,
+                        border:`2px solid ${active?m.badgeColor:C.gray5}`,
+                        background:active?m.badgeColor:C.white,
+                        display:"flex", alignItems:"center", justifyContent:"center" }}>
+                        {active&&<span style={{color:"#fff",fontSize:12}}>✓</span>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Info call */}
+            <div style={{ background:C.gray6, border:`1px solid ${C.border}`,
+              borderRadius:9, padding:"9px 13px", marginBottom:14,
+              fontSize:12, color:C.gray3, lineHeight:1.6 }}>
+              <span>ℹ️ Ricerca su più fonti · ogni ricerca usa ~<strong>{callEst}</strong> query disponibili</span>
+              {rateInfo && rateInfo.remainingDay <= 2 && (
+                <span style={{ marginLeft:6, fontSize:11,
+                  color: rateInfo.remainingDay === 0 ? "#b91c1c" : "#92400e",
+                  fontWeight:600 }}>
+                  · {rateInfo.remainingDay} ricerche rimaste oggi
+                  {rateInfo.remainingDay === 0 && (
+                    <button onClick={() => setShowUpgrade(true)}
+                      style={{ marginLeft:6, padding:"1px 7px", borderRadius:8,
+                        background:"#7c3aed", color:"#fff", border:"none",
+                        fontSize:10, fontWeight:700, cursor:"pointer" }}>
+                      Upgrade
+                    </button>
+                  )}
+                </span>
+              )}
+              <span> · {destCount} destinazioni per {from}</span>
+            </div>
+
+            <button onClick={search} disabled={loading||!modes.length} style={{
+              width:"100%", padding:"15px", border:"none", borderRadius:11,
+              background:loading||!modes.length ? C.gray5 : C.orange,
+              color:loading||!modes.length ? C.gray4 : C.white,
+              fontSize:15, fontWeight:800, fontFamily:"'Manrope',sans-serif",
+              cursor:loading||!modes.length?"not-allowed":"pointer", transition:"all 0.2s",
+              boxShadow:loading||!modes.length?"none":"0 3px 12px rgba(232,93,0,.3)",
+            }}>
+              {loading ? "Ricerca in corso..." : "🔍 Trova le migliori opportunità"}
+            </button>
+          </div>
+
+          {/* Loading */}
+          {loading && (
+            <div style={{ background:C.white, border:`1px solid ${C.border}`,
+              borderRadius:16, padding:"28px 22px", textAlign:"center",
+              boxShadow:"0 2px 10px rgba(0,0,0,.05)" }}>
+              <div style={{ width:44, height:44, border:`3px solid ${C.gray5}`,
+                borderTop:`3px solid ${C.orange}`, borderRadius:"50%",
+                animation:"spin 0.8s linear infinite", margin:"0 auto 14px" }} />
+              <div style={{ fontSize:14, fontWeight:600, color:C.gray1, marginBottom:5 }}>
+                {[t.loading1, t.loading2, t.loading3, t.loading4][Math.min(loadStep - 1, 3)] || t.btnSearching}
+              </div>
+              <div style={{ fontSize:12, color:C.gray3, marginBottom:12 }}>
+                {loadStep < loadTotal ? "Ricerca in corso..." : "Elaborazione risultati..."}
+              </div>
+              <div style={{ background:C.gray5, borderRadius:8, height:5, overflow:"hidden" }}>
+                <div style={{ height:"100%", background:C.orange, borderRadius:8,
+                  width:`${Math.round((loadStep/loadTotal)*100)}%`, transition:"width 0.4s" }} />
+              </div>
+            </div>
+          )}
+
+          {/* Errore */}
+          {error && (
+            <div style={{ background:"#fff5f5", border:"1.5px solid #fecaca",
+              borderRadius:13, padding:"16px 18px", color:"#b91c1c",
+              fontSize:13, fontWeight:500, lineHeight:1.6 }}>
+              ⚠️ {error}
+            </div>
+          )}
+
+          {/* Risultati */}
+          {results && (
+            <div>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:12 }}>
+                <div style={{ fontSize:17, fontWeight:800, fontFamily:"'Manrope',sans-serif", color:C.gray1 }}>
+                  {t.resultsFound(results.length)}
+                </div>
+                <div style={{ fontSize:12, color:C.gray3 }}>ordinate per prezzo</div>
+              </div>
+              {results.map((r,i) => <FlightCard key={i} r={r} index={i} />)}
+              <div style={{ marginTop:14, padding:"12px 14px", background:C.white,
+                border:`1px solid ${C.border}`, borderRadius:11,
+                fontSize:11, color:C.gray4, textAlign:"center", lineHeight:1.7 }}>
+                Dati Google Flights via SerpApi · Booking via Trip.com · Prezzi live
+              </div>
+            </div>
+          )}
+        </div>
+        )} {/* end search tab */}
+      </div>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
