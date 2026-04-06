@@ -1874,7 +1874,7 @@ const TIER_COLORS = {
       if (mode === "any") {
         // ── Modalità prezzo: usa Ryanair cheapestPerDay (0 call SerpApi) ──
         onProgress("Ricerca in corso...", step, totalSteps);
-        const flashOffers = await fetchSpecialOffers;
+        const flashOffers = await fetchSpecialOffers(from, budget);
         console.log(`[topaia] Special offers: ${flashOffers.length} risultati`);(from, budget);
         flashOffers.forEach(card => results.push(card));
 
