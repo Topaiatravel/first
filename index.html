@@ -1338,8 +1338,8 @@ const TIER_COLORS = {
       { code:"CMN", city:"Casablanca",   country:"Marocco",     flag:"🇲🇦", h:4.0, zone:"Africa N." },
       { code:"NBO", city:"Nairobi",      country:"Kenya",       flag:"🇰🇪", h:8.5, zone:"Africa E." },
     ],
-    // ZVN: Yerevan — destinazioni overnight raggiungibili da Armenia
-    ZVN: [
+    // EVN: Yerevan — destinazioni overnight raggiungibili da Armenia
+    EVN: [
       { code:"DXB", city:"Dubai",        country:"EAU",         flag:"🇦🇪", h:4.5, zone:"Golfo" },
       { code:"DOH", city:"Doha",         country:"Qatar",       flag:"🇶🇦", h:4.5, zone:"Golfo" },
       { code:"AUH", city:"Abu Dhabi",    country:"EAU",         flag:"🇦🇪", h:4.5, zone:"Golfo" },
@@ -1411,7 +1411,7 @@ const TIER_COLORS = {
     { code:"TRN", city:"Torino Caselle",       city_hy:"Տorino",            pax2024:4.7,  region:"Nord-Ovest" },
     { code:"CIA", city:"Roma Ciampino",        city_hy:"Հռom Ciampino",     pax2024:4.1,  region:"Centro" },
     // ── Armenia ──
-    { code:"ZVN", city:"Yerevan Zvartnots",    city_hy:"Երevан Zvarnots",   pax2024:null, region:"Armenia" },
+    { code:"EVN", city:"Yerevan Zvartnots",    city_hy:"Երevан Zvarnots",   pax2024:null, region:"Armenia" },
   ].filter((a,i,arr) => arr.findIndex(b=>b.code===a.code)===i); // dedup codes
 
   // ── FUTURE: Multi-country support ────────────────────────────────────────
@@ -1421,7 +1421,7 @@ const TIER_COLORS = {
   // 3. Il geoIP (Netlify header x-country) determina il paese di default
   // 4. Le rotte Ryanair/Wizz vanno espanse per aeroporto
   // 5. La lingua si espande con TRANSLATIONS.fr, .es, .de
-  // Per ora: solo IT + ZVN. Sistema progettato per scalare.
+  // Per ora: solo IT + EVN. Sistema progettato per scalare.
   //
   // Rilevamento paese (già disponibile nei Netlify headers):
   // event.headers["x-country"] → "IT", "FR", "DE", ...
@@ -1496,7 +1496,7 @@ const TIER_COLORS = {
     NAP: ["BCN","MAD","LIS","ATH","BUD","PRG","WAW","VIE","AMS","EDI","DUB","KRK","OPO","PMI","IBZ","AGP","STN","CMN","MXP","BGY"],
     CTA: ["BCN","MAD","LIS","ATH","BUD","PRG","WAW","VIE","AMS","EDI","DUB","OPO","PMI","IBZ","AGP","STN","CMN","MXP","BGY","FCO","NAP"],
     PSA: ["BCN","MAD","LIS","ATH","BUD","PRG","WAW","VIE","AMS","EDI","DUB","KRK","OPO","PMI","IBZ","AGP","STN","CMN"],
-    ZVN: [], // Ryanair non opera da Yerevan
+    EVN: [], // Ryanair non opera da Yerevan
     PMO: ["BCN","MAD","LIS","ATH","BUD","PRG","WAW","VIE","AMS","EDI","DUB","OPO","PMI","IBZ","AGP","STN"],
     BRI: ["BCN","MAD","LIS","ATH","BUD","PRG","WAW","VIE","AMS","EDI","DUB","OPO","PMI","IBZ","AGP","STN","CMN"],
     TRN: ["BCN","MAD","LIS","ATH","BUD","PRG","WAW","VIE","AMS","EDI","DUB","OPO","PMI","IBZ","AGP","STN","LHR"],
@@ -1518,7 +1518,7 @@ const TIER_COLORS = {
     BRI: ["BUD","KTW","WAW","SOF","OTP","TGD","SKP","TIA","LCA","CAI"],
     TRN: ["BUD","KTW","WAW","SOF","OTP","TGD","SKP","TIA","LCA"],
     CIA: ["BUD","KTW","WAW","KRK","SOF","OTP","CLJ","TGD","SKP","TIA","LCA","CAI","AMM","TLV","AUH","DXB"],
-    ZVN: ["MXP","FCO","VCE","BGY","BLQ","DXB","DOH","AUH","CDG","AMS","IST","BEY"],
+    EVN: ["MXP","FCO","VCE","BGY","BLQ","DXB","DOH","AUH","CDG","AMS","IST","BEY"],
   };
 
   // ── API ───────────────────────────────────────────────────────────────────
@@ -1868,16 +1868,17 @@ const TIER_COLORS = {
 
     for (const mode of modes) {
       step++;
+      console.log(`[topaia] Discovery from=${from}, mode=${mode}, budget=${budget}`);
       onProgress("Ricerca in corso...", step, totalSteps);
 
       if (mode === "any") {
         // ── Modalità prezzo: usa Ryanair cheapestPerDay (0 call SerpApi) ──
         onProgress("Ricerca in corso...", step, totalSteps);
-        const flashOffers = await fetchSpecialOffers(from, budget);
+        const flashOffers = await fetchSpecialOffersconsole.log(`[topaia] Special offers: ${flashOffers.length} risultati`);(from, budget);
         flashOffers.forEach(card => results.push(card));
 
 
-        const ryanairDests = (RYANAIR_ROUTES[from] || RYANAIR_ROUTES["FCO"])
+        const ryanairDests = (RYANAIR_ROUTES[from]?.length ? RYANAIR_ROUTES[from] : RYANAIR_ROUTES["FCO"])
           .map(code => BUDGET_DESTINATIONS.find(d => d.code === code))
           .filter(Boolean)
           .sort(() => Math.random() - 0.5)
@@ -1888,10 +1889,12 @@ const TIER_COLORS = {
         );
         ryanairResults.forEach(r => {
           if (r.status === "fulfilled") r.value.forEach(card => results.push(card));
+            const ryanairCount = ryanairResults.filter(r => r.status==="fulfilled").reduce((s,r) => s+r.value.length, 0);
+console.log(`[topaia] Ryanair: ${ryanairDests.length} dest cercate, ${ryanairCount} risultati`);
         });
 
 
-        const wizzDests = (WIZZAIR_ROUTES[from] || WIZZAIR_ROUTES["FCO"])
+        const wizzDests = (WIZZAIR_ROUTES[from]?.length ? WIZZAIR_ROUTES[from] : WIZZAIR_ROUTES["FCO"])
           .map(code => {
             // Cerca prima in BUDGET_DESTINATIONS, poi crea entry minimale
             const known = BUDGET_DESTINATIONS.find(d => d.code === code);
@@ -1906,6 +1909,10 @@ const TIER_COLORS = {
         );
         wizzResults.forEach(r => {
           if (r.status === "fulfilled") r.value.forEach(card => results.push(card));
+          const wizzCount = wizzResults.filter(r => r.status==="fulfilled").reduce((s,r) => s+r.value.length, 0);
+console.log(`[topaia] Wizz: ${wizzDests.length} dest cercate, ${wizzCount} risultati`);
+// Log anche i rejection per debug
+wizzResults.filter(r => r.status==="rejected").forEach(r => console.warn(`[topaia] Wizz rejected:`, r.reason?.message));
         });
 
 
@@ -1917,6 +1924,8 @@ const TIER_COLORS = {
         const aviasalesResults = await Promise.allSettled(
           aviasalesDests.map(dest => fetchAviasalesCheapest(from, dest, months, selectedNights, budget))
         );
+        const aviaCount = aviasalesResults.filter(r => r.status==="fulfilled").reduce((s,r) => s+r.value.length, 0);
+console.log(`[topaia] Aviasales: ${aviasalesDests.length} dest cercate, ${aviaCount} risultati`);
         aviasalesResults.forEach(r => {
           if (r.status === "fulfilled") r.value.forEach(card => results.push(card));
         });
